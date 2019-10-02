@@ -14,6 +14,7 @@ install:
   # Download hadolint binary and set it as executable
   - sudo curl -sL -o ${HADOLINT} "https://github.com/hadolint/hadolint/releases/download/v1.16.0/hadolint-$(uname -s)-$(uname -m)"
     && sudo chmod 777 ${HADOLINT}
+  - sudo pip install --user yamllint
 
 services:
   - docker
