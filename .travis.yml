@@ -2,14 +2,18 @@ sudo: required
 language: go
 go_import_path: github.com/IBM/multicloud-operators-placementrule
 
-dist: xenial
+env:
+  HADOLINT: "/usr/local/bin/hadolint"
 
-cache:
-  - apt: true
-  - bundler: true
+dist: xenial
 
 go:
   - "1.13"
+
+install:
+  # Download hadolint binary and set it as executable
+  - curl -sL -o ${HADOLINT} "https://github.com/hadolint/hadolint/releases/download/v1.16.0/hadolint-$(uname -s)-$(uname -m)"
+    && chmod 700 ${HADOLINT}
 
 services:
   - docker
