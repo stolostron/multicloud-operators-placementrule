@@ -17,13 +17,12 @@ package placementrule
 import (
 	"context"
 
-	"github.com/golang/glog"
-
 	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 	"github.com/IBM/multicloud-operators-placementrule/pkg/utils"
 
 	//	policyv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-compliance/pkg/apis/policy/v1alpha1"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
+	"k8s.io/klog"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -110,7 +109,7 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 	listopts := &client.ListOptions{}
 	err := mapper.List(context.TODO(), listopts, plList)
 	if err != nil {
-		glog.Error("Failed to list placement rules in mapper with err:", err)
+		klog.Error("Failed to list placement rules in mapper with err:", err)
 	}
 
 	var requests []reconcile.Request
@@ -135,14 +134,14 @@ type PolicyPlacementRuleMapper struct {
 func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.Request {
 	cname := obj.Meta.GetName()
 
-	glog.Info("In policy Mapper for ", cname)
+	klog.Info("In policy Mapper for ", cname)
 
 	plList := &appv1alpha1.PlacementRuleList{}
 
 	listopts := &client.ListOptions{}
 	err := mapper.List(context.TODO(), listopts, plList)
 	if err != nil {
-		glog.Error("Failed to list placement rules in mapper with err:", err)
+		klog.Error("Failed to list placement rules in mapper with err:", err)
 	}
 
 	var requests []reconcile.Request
@@ -169,7 +168,7 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 	instance := &appv1alpha1.PlacementRule{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 
-	glog.Info("Reconciling:", request.NamespacedName, " with Get err:", err)
+	klog.Info("Reconciling:", request.NamespacedName, " with Get err:", err)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -216,13 +215,13 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 
 	// reconcile finished check if need to upadte the resource
 	if updated {
-		glog.Info("Update placementrule ", instance.Name, " with decisions: ", instance.Status.Decisions)
+		klog.Info("Update placementrule ", instance.Name, " with decisions: ", instance.Status.Decisions)
 		err = r.Status().Update(context.Background(), instance)
 		if err != nil {
-			glog.Error("Error returned when updating placementrule decisions:", err, "instance:", instance)
+			klog.Error("Error returned when updating placementrule decisions:", err, "instance:", instance)
 		}
 	}
 
-	glog.V(10).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
+	klog.V(10).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
 	return reconcile.Result{}, nil
 }

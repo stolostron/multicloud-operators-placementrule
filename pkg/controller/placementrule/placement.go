@@ -17,7 +17,7 @@ package placementrule
 import (
 	"context"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 	"github.com/IBM/multicloud-operators-placementrule/pkg/utils"
@@ -37,19 +37,19 @@ import (
 func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRule) error {
 	clmap, err := r.prepareClusterAndStatusMaps(instance)
 	if err != nil {
-		glog.Error("Error in preparing clusters by status:", err)
+		klog.Error("Error in preparing clusters by status:", err)
 		return err
 	}
 
 	err = r.filteClustersByStatus(instance, clmap /* , clstatusmap */)
 	if err != nil {
-		glog.Error("Error in filtering clusters by status:", err)
+		klog.Error("Error in filtering clusters by status:", err)
 		return err
 	}
 
 	err = r.filteClustersByPolicies(instance, clmap /* , clstatusmap */)
 	if err != nil {
-		glog.Error("Error in filtering clusters by policy:", err)
+		klog.Error("Error in filtering clusters by policy:", err)
 		return err
 	}
 
@@ -91,11 +91,11 @@ func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alph
 	if err != nil {
 		return nil, err
 	}
-	glog.V(10).Info("Using Cluster LabelSelector ", clSelector)
+	klog.V(10).Info("Using Cluster LabelSelector ", clSelector)
 	cllist := &clusterv1alpha1.ClusterList{}
 	err = r.List(context.TODO(), &client.ListOptions{LabelSelector: clSelector}, cllist)
 	if err != nil && !errors.IsNotFound(err) {
-		glog.Error("Listing clusters and found error: ", err)
+		klog.Error("Listing clusters and found error: ", err)
 		return nil, err
 	}
 
@@ -127,7 +127,7 @@ func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.Pla
 			}
 		}
 
-		glog.V(10).Info("Cond Check ", cl.Name, cl.Status.Conditions, keep)
+		klog.V(10).Info("Cond Check ", cl.Name, cl.Status.Conditions, keep)
 		if !keep {
 			delete(clmap, k)
 		}
@@ -254,7 +254,7 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			}
 		}
 	}
-	glog.V(10).Info("New decisions for ", instance.Name, ": ", newpd)
+	klog.V(10).Info("New decisions for ", instance.Name, ": ", newpd)
 	return newpd
 }
 func (r *ReconcilePlacementRule) filteClustersByPolicies(instance *appv1alpha1.PlacementRule,

@@ -19,12 +19,12 @@ import (
 	"reflect"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
 	crdv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crdclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
 )
 
 // CheckAndInstallCRD checks if deployable belongs to this cluster
@@ -32,15 +32,15 @@ import (
 func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 	var err error
 
-	if glog.V(QuiteLogLel) {
+	if klog.V(QuiteLogLel) {
 		fnName := GetFnName()
-		glog.Infof("Entering: %v()", fnName)
-		defer glog.Infof("Exiting: %v()", fnName)
+		klog.Infof("Entering: %v()", fnName)
+		defer klog.Infof("Exiting: %v()", fnName)
 	}
 
 	crdClient, err := crdclientset.NewForConfig(crdconfig)
 	if err != nil {
-		glog.Fatalf("Error building cluster registry clientset: %s", err.Error())
+		klog.Fatalf("Error building cluster registry clientset: %s", err.Error())
 		return err
 	}
 
@@ -48,36 +48,36 @@ func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 	var crddata []byte
 	crddata, err = ioutil.ReadFile(pathname)
 	if err != nil {
-		glog.Fatal("Loading app crd file", err.Error())
+		klog.Fatal("Loading app crd file", err.Error())
 		return err
 	}
 	err = yaml.Unmarshal(crddata, &crdobj)
 	if err != nil {
-		glog.Fatal("Unmarshal app crd ", err.Error(), "\n", string(crddata))
+		klog.Fatal("Unmarshal app crd ", err.Error(), "\n", string(crddata))
 		return err
 	}
-	glog.V(10).Info("Loaded Application CRD: ", crdobj, "\n - From - \n", string(crddata))
+	klog.V(10).Info("Loaded Application CRD: ", crdobj, "\n - From - \n", string(crddata))
 
 	crd, err := crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdobj.GetName(), metav1.GetOptions{})
 	if errors.IsNotFound(err) {
-		glog.Info("Installing SIG Application CRD from File: ", pathname)
+		klog.Info("Installing SIG Application CRD from File: ", pathname)
 		// Install sig app
 		_, err = crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&crdobj)
 		if err != nil {
-			glog.Fatal("Creating CRD", err.Error())
+			klog.Fatal("Creating CRD", err.Error())
 			return err
 		}
 	} else {
 		if !reflect.DeepEqual(crd.Spec, crdobj.Spec) {
-			glog.Info("CRD ", crdobj.GetName(), " is being updated with ", pathname)
+			klog.Info("CRD ", crdobj.GetName(), " is being updated with ", pathname)
 			crdobj.Spec.DeepCopyInto(&crd.Spec)
 			_, err = crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Update(crd)
 			if err != nil {
-				glog.Fatal("Updating CRD", err.Error())
+				klog.Fatal("Updating CRD", err.Error())
 				return err
 			}
 		} else {
-			glog.Info("CRD ", crdobj.GetName(), " exists: ", pathname)
+			klog.Info("CRD ", crdobj.GetName(), " exists: ", pathname)
 		}
 		return err
 	}

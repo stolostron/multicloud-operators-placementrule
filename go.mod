@@ -3,7 +3,6 @@ module github.com/IBM/multicloud-operators-placementrule
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/spec v0.19.0
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/onsi/gomega v1.4.3
 	github.com/operator-framework/operator-sdk v0.10.1-0.20191001215102-e47857e3a01d
 	github.com/spf13/pflag v1.0.3
@@ -13,6 +12,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cluster-registry v0.0.6
+	k8s.io/klog v0.3.1
 	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208
 	sigs.k8s.io/controller-runtime v0.1.12
 	sigs.k8s.io/controller-tools v0.1.10

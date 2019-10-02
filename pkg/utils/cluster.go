@@ -17,10 +17,11 @@ package utils
 import (
 	"reflect"
 
-	"github.com/golang/glog"
 	// mcmv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-api/pkg/apis/mcm/v1alpha1"
 	// mcmauthzutils "github.ibm.com/IBMPrivateCloud/hcm-api/pkg/utils/authz"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
+
 	// "k8s.io/apimachinery/pkg/api/meta"
 	// "k8s.io/apimachinery/pkg/runtime"
 	// "k8s.io/client-go/kubernetes"
@@ -54,7 +55,7 @@ var ClusterPredicateFunc = predicate.Funcs{
 			return true
 		}
 
-		glog.V(10).Info("Out Cluster Predicate Func ", oldcl.Name, " with false possitive")
+		klog.V(10).Info("Out Cluster Predicate Func ", oldcl.Name, " with false possitive")
 		return false
 	},
 }
