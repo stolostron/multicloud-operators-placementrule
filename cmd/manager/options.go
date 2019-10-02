@@ -12,23 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package apis
+package main
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
+	pflag "github.com/spf13/pflag"
 )
 
-// AddToSchemes may be used to add all resources defined in the project to a Scheme
-var AddToSchemes runtime.SchemeBuilder
+// PlacementRuleCMDOptions for command line flag parsing
+type PlacementRuleCMDOptions struct {
+	MetricsAddr string
+}
 
-// AddToScheme adds all Resources to the Scheme
-func AddToScheme(s *runtime.Scheme) error {
-	err := clusterv1alpha1.AddToScheme(scheme.Scheme)
-	if err != nil {
-		return err
-	}
+var options = PlacementRuleCMDOptions{
+	MetricsAddr: "",
+}
 
-	return AddToSchemes.AddToScheme(s)
+// ProcessFlags parses command line parameters into options
+func ProcessFlags() {
+	flag := pflag.CommandLine
+	// add flags
+	flag.StringVar(
+		&options.MetricsAddr,
+		"metrics-addr",
+		options.MetricsAddr,
+		"The address the metric endpoint binds to.",
+	)
 }

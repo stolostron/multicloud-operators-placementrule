@@ -20,14 +20,12 @@ import (
 	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 	"github.com/IBM/multicloud-operators-placementrule/pkg/utils"
 
-	//	policyv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-compliance/pkg/apis/policy/v1alpha1"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
-	"k8s.io/klog"
-
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -78,12 +76,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-
-	// Pending for opensource policies
-	// err = c.Watch(&source.Kind{Type: &policyv1alpha1.Policy{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: &PolicyPlacementRuleMapper{mgr.GetClient()}})
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
