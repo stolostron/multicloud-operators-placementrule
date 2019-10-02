@@ -14,11 +14,12 @@ install:
   # Download hadolint binary and set it as executable
   - sudo curl -sL -o ${HADOLINT} "https://github.com/hadolint/hadolint/releases/download/v1.16.0/hadolint-$(uname -s)-$(uname -m)"
     && sudo chmod 777 ${HADOLINT}
+  # install yamllint
   - sudo pip install yamllint
+  # install golangci-lint
   - go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-
-services:
-  - docker
+  # install prototool
+  - go get -u github.com/uber/prototool/cmd/prototool
 
 # define stages
 stages:
