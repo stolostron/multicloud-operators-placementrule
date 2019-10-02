@@ -50,6 +50,7 @@ lint-copyright-banner:
 		${XARGS} common/scripts/lint_copyright_banner.sh
 
 lint-go:
+	go mod download
 	@${FINDFILES} -name '*.go' \( ! \( -name '*.gen.go' -o -name '*.pb.go' \) \) -print0 | ${XARGS} common/scripts/lint_go.sh
 
 lint-python:
