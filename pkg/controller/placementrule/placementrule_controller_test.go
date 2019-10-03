@@ -45,8 +45,8 @@ var expectedRequest = reconcile.Request{NamespacedName: prulekey}
 
 const timeout = time.Second * 5
 
-var clusters = []*clusterv1alpha1.Cluster{
-	&clusterv1alpha1.Cluster{
+var (
+	clusteralpha = &clusterv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "clusteralpha",
 			Namespace: prulens,
@@ -56,8 +56,8 @@ var clusters = []*clusterv1alpha1.Cluster{
 				"key2": "value",
 			},
 		},
-	},
-	&clusterv1alpha1.Cluster{
+	}
+	clusterbeta = &clusterv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "clusterbeta",
 			Namespace: prulens,
@@ -67,8 +67,10 @@ var clusters = []*clusterv1alpha1.Cluster{
 				"key2": "value",
 			},
 		},
-	},
-}
+	}
+
+	clusters = []*clusterv1alpha1.Cluster{clusteralpha, clusterbeta}
+)
 
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
@@ -101,7 +103,6 @@ func TestReconcile(t *testing.T) {
 	defer c.Delete(context.TODO(), instance)
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
-
 }
 
 func TestClusterNames(t *testing.T) {
@@ -257,7 +258,6 @@ func TestAllClusters(t *testing.T) {
 	if len(result.Status.Decisions) != 2 {
 		t.Errorf("Failed to get all clusters, placementrule: %v", result)
 	}
-
 }
 
 func TestClusterReplica(t *testing.T) {
@@ -309,7 +309,6 @@ func TestClusterReplica(t *testing.T) {
 	if len(result.Status.Decisions) != 1 {
 		t.Errorf("Failed to get 1 from all clusters, placementrule: %v", result)
 	}
-
 }
 
 func TestClusterChange(t *testing.T) {
@@ -370,5 +369,4 @@ func TestClusterChange(t *testing.T) {
 	if len(result.Status.Decisions) != 2 {
 		t.Errorf("Failed to get all(2) clusters, placementrule: %v", result)
 	}
-
 }
