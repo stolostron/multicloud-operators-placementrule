@@ -75,7 +75,7 @@ func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alph
 
 	var labelSelector *metav1.LabelSelector
 
-	// MCM Assumption: clusters are always labeled by its name
+	// MCM Assumption: clusters are always labeled by
 	if instance.Spec.ClusterNames != nil {
 		namereq := metav1.LabelSelectorRequirement{}
 		namereq.Key = "name"
@@ -100,7 +100,7 @@ func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alph
 		return nil, err
 	}
 
-	klog.Info("listed clusters:", cllist.Items)
+	klog.V(10).Info("listed clusters:", cllist.Items)
 	for _, cl := range cllist.Items {
 		clmap[cl.Name] = cl.DeepCopy()
 	}

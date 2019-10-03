@@ -100,8 +100,6 @@ func TestReconcile(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), instance)
 
-	time.Sleep(1 * time.Second)
-
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 }
@@ -115,7 +113,7 @@ func TestClusterNames(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 
-	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
 	defer func() {
@@ -145,7 +143,7 @@ func TestClusterNames(t *testing.T) {
 	defer c.Delete(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(1 * time.Second)
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -165,7 +163,7 @@ func TestClusterLabels(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 
-	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
 	defer func() {
@@ -203,7 +201,7 @@ func TestClusterLabels(t *testing.T) {
 	defer c.Delete(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(1 * time.Second)
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -223,7 +221,7 @@ func TestAllClusters(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 
-	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
 	defer func() {
@@ -250,7 +248,7 @@ func TestAllClusters(t *testing.T) {
 	defer c.Delete(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(1 * time.Second)
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -271,7 +269,7 @@ func TestClusterReplica(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 
-	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
 	defer func() {
@@ -302,14 +300,75 @@ func TestClusterReplica(t *testing.T) {
 	defer c.Delete(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(1 * time.Second)
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	if len(result.Status.Decisions) != 1 {
-		t.Errorf("Failed to get all clusters, placementrule: %v", result)
+		t.Errorf("Failed to get 1 from all clusters, placementrule: %v", result)
+	}
+
+}
+
+func TestClusterChange(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	c = mgr.GetClient()
+
+	recFn, requests := SetupTestReconcile(newReconciler(mgr))
+	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	clinstance := clusters[0].DeepCopy()
+	err = c.Create(context.TODO(), clinstance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	defer c.Delete(context.TODO(), clinstance)
+
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
+	}
+
+	err = c.Create(context.TODO(), instance)
+	defer c.Delete(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	result := &appv1alpha1.PlacementRule{}
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 1 {
+		t.Errorf("Failed to get all(1) clusters, placementrule: %v", result)
+	}
+
+	clinstance = clusters[1].DeepCopy()
+	err = c.Create(context.TODO(), clinstance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	defer c.Delete(context.TODO(), clinstance)
+
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
+
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 2 {
+		t.Errorf("Failed to get all(2) clusters, placementrule: %v", result)
 	}
 
 }
