@@ -1,0 +1,95 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: placementrules.app.ibm.com
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: app.ibm.com
+  names:
+    kind: PlacementRule
+    listKind: PlacementRuleList
+    plural: placementrules
+    singular: placementrule
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            clusterConditions:
+              items:
+                properties:
+                  status:
+                    type: string
+                  type:
+                    type: string
+                type: object
+              type: array
+            clusterLabels:
+              description: Target Cluster is a selector of cluster
+              type: object
+            clusterNames:
+              description: Target Clusters
+              items:
+                type: string
+              type: array
+            clusterReplicas:
+              description: number of replicas Application wants to
+              format: int32
+              type: integer
+            policies:
+              description: Set Policy Filters
+              items:
+                type: object
+              type: array
+            resourceHint:
+              description: Select Resource
+              properties:
+                order:
+                  type: string
+                type:
+                  type: string
+              type: object
+            schedulerName:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file
+                schedulerName, default to use mcm controller'
+              type: string
+          type: object
+        status:
+          properties:
+            decisions:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              items:
+                properties:
+                  clusterName:
+                    type: string
+                  clusterNamespace:
+                    type: string
+                type: object
+              type: array
+          type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
