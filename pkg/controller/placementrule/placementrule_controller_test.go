@@ -20,9 +20,9 @@ import (
 
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -32,13 +32,46 @@ import (
 
 var c client.Client
 
-var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: "foo-prule", Namespace: "default"}}
+var (
+	prulename = "foo-prule"
+	prulens   = "default"
+	prulekey  = types.NamespacedName{
+		Name:      prulename,
+		Namespace: prulens,
+	}
+)
+
+var expectedRequest = reconcile.Request{NamespacedName: prulekey}
 
 const timeout = time.Second * 5
 
+var clusters = []*clusterv1alpha1.Cluster{
+	&clusterv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "clusteralpha",
+			Namespace: prulens,
+			Labels: map[string]string{
+				"name": "clusteralpha",
+				"key1": "value1",
+				"key2": "value",
+			},
+		},
+	},
+	&clusterv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "clusterbeta",
+			Namespace: prulens,
+			Labels: map[string]string{
+				"name": "clusterbeta",
+				"key1": "value2",
+				"key2": "value",
+			},
+		},
+	},
+}
+
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
-	instance := &appv1alpha1.PlacementRule{ObjectMeta: metav1.ObjectMeta{Name: "foo-prule", Namespace: "default"}}
 
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
@@ -57,14 +90,226 @@ func TestReconcile(t *testing.T) {
 	}()
 
 	// Create the PlacementRule object and expect the Reconcile
-	err = c.Create(context.TODO(), instance)
-	// The instance object may not be a valid object because it might be missing some required fields.
-	// Please modify the instance object by adding required fields and then remove the following if statement.
-	if apierrors.IsInvalid(err) {
-		t.Logf("failed to create object, got an invalid object error: %v", err)
-		return
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
 	}
+	err = c.Create(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), instance)
+
+	time.Sleep(1 * time.Second)
+
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+}
+
+func TestClusterNames(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	c = mgr.GetClient()
+
+	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	for _, cl := range clusters {
+		clinstance := cl.DeepCopy()
+
+		err = c.Create(context.TODO(), clinstance)
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		defer c.Delete(context.TODO(), clinstance)
+	}
+
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
+		Spec: appv1alpha1.PlacementRuleSpec{
+			ClusterNames: []string{clusters[0].Name},
+		},
+	}
+
+	err = c.Create(context.TODO(), instance)
+	defer c.Delete(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	time.Sleep(1 * time.Second)
+
+	result := &appv1alpha1.PlacementRule{}
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 1 || result.Status.Decisions[0].ClusterName != clusters[0].Name {
+		t.Errorf("Failed to get cluster by name, placementrule: %v", result)
+	}
+}
+
+func TestClusterLabels(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	c = mgr.GetClient()
+
+	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	for _, cl := range clusters {
+		clinstance := cl.DeepCopy()
+		err = c.Create(context.TODO(), clinstance)
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		defer c.Delete(context.TODO(), clinstance)
+	}
+
+	namereq := metav1.LabelSelectorRequirement{}
+	namereq.Key = "key1"
+	namereq.Operator = metav1.LabelSelectorOpIn
+
+	namereq.Values = []string{"value2"}
+	labelSelector := &metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{namereq},
+	}
+
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
+		Spec: appv1alpha1.PlacementRuleSpec{
+			ClusterLabels: labelSelector,
+		},
+	}
+
+	err = c.Create(context.TODO(), instance)
+	defer c.Delete(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	time.Sleep(1 * time.Second)
+
+	result := &appv1alpha1.PlacementRule{}
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 1 || result.Status.Decisions[0].ClusterName != clusters[1].Name {
+		t.Errorf("Failed to get cluster by label, placementrule: %v", result)
+	}
+}
+
+func TestAllClusters(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	c = mgr.GetClient()
+
+	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	for _, cl := range clusters {
+		clinstance := cl.DeepCopy()
+
+		err = c.Create(context.TODO(), clinstance)
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		defer c.Delete(context.TODO(), clinstance)
+	}
+
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
+	}
+
+	err = c.Create(context.TODO(), instance)
+	defer c.Delete(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	time.Sleep(1 * time.Second)
+
+	result := &appv1alpha1.PlacementRule{}
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 2 {
+		t.Errorf("Failed to get all clusters, placementrule: %v", result)
+	}
+
+}
+
+func TestClusterReplica(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	c = mgr.GetClient()
+
+	recFn, _ := SetupTestReconcile(newReconciler(mgr))
+	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	for _, cl := range clusters {
+		clinstance := cl.DeepCopy()
+
+		err = c.Create(context.TODO(), clinstance)
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		defer c.Delete(context.TODO(), clinstance)
+	}
+
+	var rpl int32 = 1
+	instance := &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      prulename,
+			Namespace: prulens,
+		},
+		Spec: appv1alpha1.PlacementRuleSpec{
+			ClusterReplicas: &rpl,
+		},
+	}
+
+	err = c.Create(context.TODO(), instance)
+	defer c.Delete(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	time.Sleep(1 * time.Second)
+
+	result := &appv1alpha1.PlacementRule{}
+	err = c.Get(context.TODO(), prulekey, result)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	if len(result.Status.Decisions) != 1 {
+		t.Errorf("Failed to get all clusters, placementrule: %v", result)
+	}
+
 }

@@ -68,13 +68,14 @@ func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRul
 // Bottomline: Use label selector
 func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alpha1.PlacementRule) (map[string]*clusterv1alpha1.Cluster, error) {
 	if instance == nil {
-		return nil /* nil, */, nil
+		return nil, nil
 	}
 
 	clmap := make(map[string]*clusterv1alpha1.Cluster)
 
 	var labelSelector *metav1.LabelSelector
 
+	// MCM Assumption: clusters are always labeled by its name
 	if instance.Spec.ClusterNames != nil {
 		namereq := metav1.LabelSelectorRequirement{}
 		namereq.Key = "name"
@@ -99,6 +100,7 @@ func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alph
 		return nil, err
 	}
 
+	klog.Info("listed clusters:", cllist.Items)
 	for _, cl := range cllist.Items {
 		clmap[cl.Name] = cl.DeepCopy()
 	}
