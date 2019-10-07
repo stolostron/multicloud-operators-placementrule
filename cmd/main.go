@@ -12,29 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manager
+package main
 
 import (
-	pflag "github.com/spf13/pflag"
+	"github.com/spf13/pflag"
+	"k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/apiserver/pkg/util/logs"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
+	"github.com/IBM/multicloud-operators-placementrule/cmd/manager"
 )
 
-// PlacementRuleCMDOptions for command line flag parsing
-type PlacementRuleCMDOptions struct {
-	MetricsAddr string
-}
+func main() {
+	manager.ProcessFlags()
 
-var options = PlacementRuleCMDOptions{
-	MetricsAddr: "",
-}
+	flag.InitFlags()
+	logs.InitLogs()
+	defer logs.FlushLogs()
 
-// ProcessFlags parses command line parameters into options
-func ProcessFlags() {
-	flag := pflag.CommandLine
-	// add flags
-	flag.StringVar(
-		&options.MetricsAddr,
-		"metrics-addr",
-		options.MetricsAddr,
-		"The address the metric endpoint binds to.",
-	)
+	pflag.Parse()
+
+	manager.RunManager()
 }

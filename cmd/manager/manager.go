@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package manager
 
 import (
 	"context"
@@ -35,15 +35,12 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
-	"k8s.io/apiserver/pkg/util/flag"
-	"k8s.io/apiserver/pkg/util/logs"
 	"k8s.io/klog"
 )
 
@@ -60,15 +57,8 @@ func printVersion() {
 	klog.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
 }
 
-func main() {
-	// Add flags registered by imported packages (e.g. controller-runtime)
-	ProcessFlags()
-	flag.InitFlags()
-	pflag.Parse()
-
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
+// RunManager starts the actual manager
+func RunManager() {
 	printVersion()
 
 	// Get a config to talk to the apiserver

@@ -31,11 +31,12 @@ VERSION ?= $(shell git describe --exact-match 2> /dev/null || \
 IMG ?= go-repo-template
 REGISTRY ?= quay.io/multicloudlab
 
+.PHONY: all
+all: check test build images
+
 ifneq ("$(realpath $(DEST))", "$(realpath $(PWD))")
 	$(error Please run 'make' from $(DEST). Current directory is $(PWD))
 endif
-
-all: check test build images
 
 include common/Makefile.common.mk
 
