@@ -130,13 +130,16 @@ func TestClusterNames(t *testing.T) {
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
+	cl1 := appv1alpha1.GenericClusterReference{Name: clusteralpha.GetName()}
 	instance := &appv1alpha1.PlacementRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      prulename,
 			Namespace: prulens,
 		},
 		Spec: appv1alpha1.PlacementRuleSpec{
-			ClusterNames: []string{clusters[0].Name},
+			GenericPlacementFields: appv1alpha1.GenericPlacementFields{
+				Clusters: []appv1alpha1.GenericClusterReference{cl1},
+			},
 		},
 	}
 
@@ -194,7 +197,9 @@ func TestClusterLabels(t *testing.T) {
 			Namespace: prulens,
 		},
 		Spec: appv1alpha1.PlacementRuleSpec{
-			ClusterLabels: labelSelector,
+			GenericPlacementFields: appv1alpha1.GenericPlacementFields{
+				ClusterSelector: labelSelector,
+			},
 		},
 	}
 

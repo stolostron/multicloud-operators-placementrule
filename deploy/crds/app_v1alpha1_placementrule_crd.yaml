@@ -42,18 +42,21 @@ spec:
                     type: string
                 type: object
               type: array
-            clusterLabels:
-              description: Target Cluster is a selector of cluster
-              type: object
-            clusterNames:
-              description: Target Clusters
-              items:
-                type: string
-              type: array
             clusterReplicas:
               description: number of replicas Application wants to
               format: int32
               type: integer
+            clusterSelector:
+              type: object
+            clusters:
+              items:
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              type: array
             policies:
               description: Set Policy Filters
               items:

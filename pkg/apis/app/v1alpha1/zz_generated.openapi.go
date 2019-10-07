@@ -25,7 +25,7 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRule": schema_pkg_apis_app_v1alpha1_PlacementRule(ref),
+		"github.com/kuanf/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRule": schema_pkg_apis_app_v1alpha1_PlacementRule(ref),
 	}
 }
 
@@ -56,18 +56,18 @@ func schema_pkg_apis_app_v1alpha1_PlacementRule(ref common.ReferenceCallback) co
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleSpec"),
+							Ref: ref("github.com/kuanf/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleStatus"),
+							Ref: ref("github.com/kuanf/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleSpec", "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/kuanf/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleSpec", "github.com/kuanf/multicloud-operators-placementrule/pkg/apis/app/v1alpha1.PlacementRuleStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }

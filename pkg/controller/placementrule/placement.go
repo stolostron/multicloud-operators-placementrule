@@ -15,8 +15,6 @@
 package placementrule
 
 import (
-	"context"
-
 	"k8s.io/klog"
 
 	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
@@ -27,15 +25,12 @@ import (
 
 	"sort"
 
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRule) error {
-	clmap, err := r.prepareClusterAndStatusMaps(instance)
+	clmap, err := utils.PlaceByGenericPlacmentFields(r.Client, instance.Spec.GenericPlacementFields)
 	if err != nil {
 		klog.Error("Error in preparing clusters by status:", err)
 		return err
@@ -62,50 +57,6 @@ func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRul
 	instance.Status.Decisions = newpd
 
 	return nil
-}
-
-// Top priority: clusterNames, ignore selector
-// Bottomline: Use label selector
-func (r *ReconcilePlacementRule) prepareClusterAndStatusMaps(instance *appv1alpha1.PlacementRule) (map[string]*clusterv1alpha1.Cluster, error) {
-	if instance == nil {
-		return nil, nil
-	}
-
-	clmap := make(map[string]*clusterv1alpha1.Cluster)
-
-	var labelSelector *metav1.LabelSelector
-
-	// MCM Assumption: clusters are always labeled by
-	if instance.Spec.ClusterNames != nil {
-		namereq := metav1.LabelSelectorRequirement{}
-		namereq.Key = "name"
-		namereq.Operator = metav1.LabelSelectorOpIn
-
-		namereq.Values = append(namereq.Values, instance.Spec.ClusterNames...)
-		labelSelector = &metav1.LabelSelector{
-			MatchExpressions: []metav1.LabelSelectorRequirement{namereq},
-		}
-	} else {
-		labelSelector = instance.Spec.ClusterLabels
-	}
-	clSelector, err := utils.ConvertLabels(labelSelector)
-	if err != nil {
-		return nil, err
-	}
-	klog.V(10).Info("Using Cluster LabelSelector ", clSelector)
-	cllist := &clusterv1alpha1.ClusterList{}
-	err = r.List(context.TODO(), &client.ListOptions{LabelSelector: clSelector}, cllist)
-	if err != nil && !errors.IsNotFound(err) {
-		klog.Error("Listing clusters and found error: ", err)
-		return nil, err
-	}
-
-	klog.V(10).Info("listed clusters:", cllist.Items)
-	for _, cl := range cllist.Items {
-		clmap[cl.Name] = cl.DeepCopy()
-	}
-
-	return clmap, nil
 }
 
 func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.PlacementRule, clmap map[string]*clusterv1alpha1.Cluster) error {

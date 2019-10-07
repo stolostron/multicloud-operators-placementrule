@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manager
+package exec
 
 import (
 	"context"
@@ -20,8 +20,6 @@ import (
 	"os"
 	"runtime"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 
 	"github.com/prometheus/common/log"
