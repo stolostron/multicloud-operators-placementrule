@@ -149,6 +149,8 @@ func TestClusterNames(t *testing.T) {
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
+	time.Sleep(1 * time.Second)
+
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
@@ -209,6 +211,8 @@ func TestClusterLabels(t *testing.T) {
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
+	time.Sleep(1 * time.Second)
+
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
@@ -255,6 +259,8 @@ func TestAllClusters(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -306,6 +312,8 @@ func TestClusterReplica(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
