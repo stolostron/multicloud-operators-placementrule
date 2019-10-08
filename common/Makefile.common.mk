@@ -31,7 +31,8 @@ config-docker: get-cluster-credentials
 	@common/scripts/config_docker.sh
 
 FINDFILES=find . \( -path ./.git -o -path ./.github \) -prune -o -type f
-XARGS = xargs ${XARGS_FLAGS}
+XARGS = xargs -0 ${XARGS_FLAGS}
+CLEANXARGS = xargs ${XARGS_FLAGS}
 
 lint-dockerfiles:
 	@${FINDFILES} -name 'Dockerfile*' -print0 | ${XARGS} hadolint -c ./common/config/.hadolint.yml
@@ -40,7 +41,7 @@ lint-scripts:
 	@${FINDFILES} -name '*.sh' -print0 | ${XARGS} shellcheck
 
 lint-yaml:
-	${FINDFILES} \( -name '*.yml' -o -name '*.yaml' \) -print0 | ${XARGS} grep -L -e "{{" | ${XARGS} yamllint -c ./common/config/.yamllint.yml
+	@${FINDFILES} \( -name '*.yml' -o -name '*.yaml' \) -print0 | ${XARGS} grep -L -e "{{" | ${CLEANXARGS} yamllint -c ./common/config/.yamllint.yml
 
 lint-helm:
 	@${FINDFILES} -name 'Chart.yaml' -print0 | ${XARGS} -L 1 dirname | ${XARGS} helm lint --strict
