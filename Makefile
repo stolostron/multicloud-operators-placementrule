@@ -28,7 +28,7 @@ VERSION ?= $(shell git describe --exact-match 2> /dev/null || \
                  git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
 
 # Image URL to use all building/pushing image targets
-IMG ?= go-repo-template
+IMG ?= multicloud-operators-placementrule
 REGISTRY ?= quay.io/multicloudlab
 
 .PHONY: all
