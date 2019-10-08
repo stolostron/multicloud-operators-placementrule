@@ -1,5 +1,7 @@
 [![Build](https://travis-ci.org/IBM/multicloud-operators-placementrule.svg?branch=master)](https://travis-ci.org/IBM/multicloud-operators-placementrule.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/IBM/multicloud-operators-placementrule)](https://goreportcard.com/report/github.com/IBM/multicloud-operators-placementrule)
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
