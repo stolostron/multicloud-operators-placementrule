@@ -19,6 +19,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -29,12 +31,13 @@ import (
 // PlaceByGenericPlacmentFields search with basic placement criteria
 // Top priority: clusterNames, ignore selector
 // Bottomline: Use label selector
-func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha1.GenericPlacementFields) (map[string]*clusterv1alpha1.Cluster, error) {
+func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha1.GenericPlacementFields,
+	authclient kubernetes.Interface, object runtime.Object) (map[string]*clusterv1alpha1.Cluster, error) {
 	clmap := make(map[string]*clusterv1alpha1.Cluster)
 
 	var labelSelector *metav1.LabelSelector
 
-	// MCM Assumption: clusters are always labeled by
+	// MCM Assumption: clusters are always labeled with name
 	if len(placement.Clusters) != 0 {
 		namereq := metav1.LabelSelectorRequirement{}
 		namereq.Key = "name"

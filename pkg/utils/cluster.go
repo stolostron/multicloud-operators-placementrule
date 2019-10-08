@@ -17,14 +17,9 @@ package utils
 import (
 	"reflect"
 
-	// mcmv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-api/pkg/apis/mcm/v1alpha1"
-	// mcmauthzutils "github.ibm.com/IBMPrivateCloud/hcm-api/pkg/utils/authz"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
-	// "k8s.io/apimachinery/pkg/api/meta"
-	// "k8s.io/apimachinery/pkg/runtime"
-	// "k8s.io/client-go/kubernetes"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -59,43 +54,3 @@ var ClusterPredicateFunc = predicate.Funcs{
 		return false
 	},
 }
-
-// FilteClustersByIdentity filter clusters by identity based on team/tenant in MCM
-// func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object,
-//	clmap map[string]*clusterv1alpha1.Cluster, clstatusmap map[string]*mcmv1alpha1.ClusterStatus) error {
-
-// 	objmeta, err := meta.Accessor(object)
-// 	if err != nil {
-// 		return nil
-// 	}
-// 	objanno := objmeta.GetAnnotations()
-// 	if objanno == nil {
-// 		return nil
-// 	}
-// 	if _, ok := objanno[mcmv1alpha1.UserIdentityAnnotation]; !ok {
-// 		return nil
-// 	}
-
-// 	var clusters []*clusterv1alpha1.Cluster
-
-// 	for _, cl := range clmap {
-// 		clusters = append(clusters, cl.DeepCopy())
-// 	}
-
-// 	clusters = mcmauthzutils.FilterClusterByUserIdentity(object, clusters, authClient, "works", "create")
-
-// 	validclMap := make(map[string]bool)
-// 	for _, cl := range clusters {
-// 		validclMap[cl.GetName()] = true
-// 	}
-
-// 	for k := range clmap {
-// 		if valid, ok := validclMap[k]; !ok || !valid {
-// 			delete(clmap, k)
-// 			delete(clstatusmap, k)
-// 		}
-
-// 	}
-
-// 	return nil
-// }
