@@ -23,9 +23,22 @@ import (
 	crdclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 )
+
+// ConvertLabels coverts label selector to lables.Selector
+func ConvertLabels(labelSelector *metav1.LabelSelector) (labels.Selector, error) {
+	if labelSelector != nil {
+		selector, err := metav1.LabelSelectorAsSelector(labelSelector)
+		if err != nil {
+			return labels.Nothing(), err
+		}
+		return selector, nil
+	}
+	return labels.Everything(), nil
+}
 
 // CheckAndInstallCRD checks if deployable belongs to this cluster
 // managed cluster annotation matches or no managed cluster annotation (local)

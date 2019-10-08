@@ -12,21 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package exec
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	pflag "github.com/spf13/pflag"
 )
 
-// ConvertLabels coverts label selector to lables.Selector
-func ConvertLabels(labelSelector *metav1.LabelSelector) (labels.Selector, error) {
-	if labelSelector != nil {
-		selector, err := metav1.LabelSelectorAsSelector(labelSelector)
-		if err != nil {
-			return labels.Nothing(), err
-		}
-		return selector, nil
-	}
-	return labels.Everything(), nil
+// PlacementRuleCMDOptions for command line flag parsing
+type PlacementRuleCMDOptions struct {
+	MetricsAddr string
+}
+
+var options = PlacementRuleCMDOptions{
+	MetricsAddr: "",
+}
+
+// ProcessFlags parses command line parameters into options
+func ProcessFlags() {
+	flag := pflag.CommandLine
+	// add flags
+	flag.StringVar(
+		&options.MetricsAddr,
+		"metrics-addr",
+		options.MetricsAddr,
+		"The address the metric endpoint binds to.",
+	)
 }

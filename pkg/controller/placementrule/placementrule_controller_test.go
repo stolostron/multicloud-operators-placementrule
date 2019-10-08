@@ -130,13 +130,16 @@ func TestClusterNames(t *testing.T) {
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
+	cl1 := appv1alpha1.GenericClusterReference{Name: clusteralpha.GetName()}
 	instance := &appv1alpha1.PlacementRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      prulename,
 			Namespace: prulens,
 		},
 		Spec: appv1alpha1.PlacementRuleSpec{
-			ClusterNames: []string{clusters[0].Name},
+			GenericPlacementFields: appv1alpha1.GenericPlacementFields{
+				Clusters: []appv1alpha1.GenericClusterReference{cl1},
+			},
 		},
 	}
 
@@ -145,6 +148,8 @@ func TestClusterNames(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -194,7 +199,9 @@ func TestClusterLabels(t *testing.T) {
 			Namespace: prulens,
 		},
 		Spec: appv1alpha1.PlacementRuleSpec{
-			ClusterLabels: labelSelector,
+			GenericPlacementFields: appv1alpha1.GenericPlacementFields{
+				ClusterSelector: labelSelector,
+			},
 		},
 	}
 
@@ -203,6 +210,8 @@ func TestClusterLabels(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -250,6 +259,8 @@ func TestAllClusters(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)
@@ -301,6 +312,8 @@ func TestClusterReplica(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+
+	time.Sleep(1 * time.Second)
 
 	result := &appv1alpha1.PlacementRule{}
 	err = c.Get(context.TODO(), prulekey, result)

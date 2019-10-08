@@ -27,20 +27,11 @@ const (
 	SchedulerNameMCM = "mcm"
 )
 
-// Cluster is object with name field only to specify cluster
-type Cluster struct {
-	Name string `json:"name,omitempty"`
-}
-
 // Placement field to be referenced in specs, align with Fedv2, add placementref
 type Placement struct {
-	PlacementRef    *corev1.ObjectReference `json:"placementRef,omitempty"`
-	Clusters        []Cluster               `json:"clusters,omitempty"`
-	ClusterSelector *metav1.LabelSelector   `json:"clusterSelector,omitempty"`
+	GenericPlacementFields `json:",inline"`
+	PlacementRef           *corev1.ObjectReference `json:"placementRef,omitempty"`
 }
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // ClusterConditionFilter defines filter to filter cluster condition
 type ClusterConditionFilter struct {
@@ -76,6 +67,17 @@ type ResourceHint struct {
 	Order SelectionOrder `json:"order,omitempty"`
 }
 
+// GenericClusterReference - in alignment with kubefed
+type GenericClusterReference struct {
+	Name string `json:"name"`
+}
+
+// GenericPlacementFields - in alignment with kubefed
+type GenericPlacementFields struct {
+	Clusters        []GenericClusterReference `json:"clusters,omitempty"`
+	ClusterSelector *metav1.LabelSelector     `json:"clusterSelector,omitempty"`
+}
+
 // PlacementRuleSpec defines the desired state of PlacementRule
 type PlacementRuleSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -87,11 +89,7 @@ type PlacementRuleSpec struct {
 	// number of replicas Application wants to
 	ClusterReplicas *int32 `json:"clusterReplicas,omitempty"`
 	// +optional
-	// Target Clusters
-	ClusterNames []string `json:"clusterNames,omitempty"`
-	// +optional
-	// Target Cluster is a selector of cluster
-	ClusterLabels *metav1.LabelSelector `json:"clusterLabels,omitempty"`
+	GenericPlacementFields `json:",inline"`
 	// +optional
 	ClusterConditions []ClusterConditionFilter `json:"clusterConditions,omitempty"`
 	// +optional

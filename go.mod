@@ -3,11 +3,28 @@ module github.com/IBM/multicloud-operators-placementrule
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/spec v0.19.0
-	github.com/onsi/gomega v1.4.3
+	github.com/gogo/protobuf v1.3.0 // indirect
+	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
+	github.com/onsi/ginkgo v1.10.1 // indirect
+	github.com/onsi/gomega v1.7.0
 	github.com/operator-framework/operator-sdk v0.10.1-0.20191001215102-e47857e3a01d
-	github.com/prometheus/common v0.2.0
-	github.com/spf13/pflag v1.0.3
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	github.com/prometheus/client_golang v0.9.3 // indirect
+	github.com/prometheus/common v0.4.0
+	github.com/rogpeppe/go-internal v1.3.2 // indirect
+	github.com/sirupsen/logrus v1.4.2 // indirect
+	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.4.0 // indirect
+	go.uber.org/atomic v1.4.0 // indirect
+	go.uber.org/zap v1.10.0 // indirect
+	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392 // indirect
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
+	golang.org/x/sys v0.0.0-20191008105621-543471e840be // indirect
+	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/tools v0.0.0-20191007185444-6536af71d98a // indirect
+	google.golang.org/grpc v1.21.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/yaml.v2 v2.2.4 // indirect
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apiextensions-apiserver v0.0.0-20190409022649-727a075fdec8
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
