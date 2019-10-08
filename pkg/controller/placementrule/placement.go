@@ -30,7 +30,7 @@ import (
 )
 
 func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRule) error {
-	clmap, err := utils.PlaceByGenericPlacmentFields(r.Client, instance.Spec.GenericPlacementFields)
+	clmap, err := utils.PlaceByGenericPlacmentFields(r.Client, instance.Spec.GenericPlacementFields, r.authClient, instance)
 	if err != nil {
 		klog.Error("Error in preparing clusters by status:", err)
 		return err
