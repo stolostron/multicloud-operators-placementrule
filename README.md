@@ -1,6 +1,5 @@
 # multicloud-operators-placementrule
 
-[![Test](http://35.227.205.240/badge.svg?jobs=test_multicloud-operators-placementrule)](http://35.227.205.240/badge.svg?jobs=test_multicloud-operators-placementrule)
 [![Build](http://35.227.205.240/badge.svg?jobs=build_multicloud-operators-placementrule)](http://35.227.205.240/badge.svg?jobs=build_multicloud-operators-placementrule)
 [![Go Report Card](https://goreportcard.com/badge/github.com/IBM/multicloud-operators-placementrule)](https://goreportcard.com/report/github.com/IBM/multicloud-operators-placementrule)
 [![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)

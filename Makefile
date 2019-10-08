@@ -98,7 +98,7 @@ test:
 # build section
 ############################################################
 
-build:
+build: test
 	common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
 
 ############################################################
