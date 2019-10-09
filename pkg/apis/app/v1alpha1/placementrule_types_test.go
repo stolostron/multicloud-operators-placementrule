@@ -37,8 +37,8 @@ func TestStoragePlacementRule(t *testing.T) {
 
 	// Test Create
 	fetched := &PlacementRule{}
-	g.Expect(c.Create(context.TODO(), created)).NotTo(gomega.HaveOccurred())
 
+	g.Expect(c.Create(context.TODO(), created)).NotTo(gomega.HaveOccurred())
 	g.Expect(c.Get(context.TODO(), key, fetched)).NotTo(gomega.HaveOccurred())
 	g.Expect(fetched).To(gomega.Equal(created))
 

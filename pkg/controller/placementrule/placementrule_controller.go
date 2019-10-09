@@ -100,6 +100,7 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 
 	listopts := &client.ListOptions{}
 	err := mapper.List(context.TODO(), listopts, plList)
+
 	if err != nil {
 		klog.Error("Failed to list placement rules in mapper with err:", err)
 	}
@@ -111,6 +112,7 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 			Name:      pl.GetName(),
 			Namespace: pl.GetNamespace(),
 		}
+
 		requests = append(requests, reconcile.Request{NamespacedName: objkey})
 	}
 
@@ -132,6 +134,7 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.
 
 	listopts := &client.ListOptions{}
 	err := mapper.List(context.TODO(), listopts, plList)
+
 	if err != nil {
 		klog.Error("Failed to list placement rules in mapper with err:", err)
 	}
@@ -143,6 +146,7 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.
 			Name:      pl.GetName(),
 			Namespace: pl.GetNamespace(),
 		}
+
 		requests = append(requests, reconcile.Request{NamespacedName: objkey})
 	}
 
@@ -193,14 +197,17 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 	}
 
 	updated := false
+
 	for _, cl := range instance.Status.Decisions {
 		ns, ok := orgclmap[cl.ClusterName]
 		if !ok || ns != cl.ClusterNamespace {
 			updated = true
 			break
 		}
+
 		delete(orgclmap, cl.ClusterName)
 	}
+
 	if !updated && len(orgclmap) > 0 {
 		updated = true
 	}
@@ -209,11 +216,13 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 	if updated {
 		klog.Info("Update placementrule ", instance.Name, " with decisions: ", instance.Status.Decisions)
 		err = r.Status().Update(context.Background(), instance)
+
 		if err != nil {
 			klog.Error("Error returned when updating placementrule decisions:", err, "instance:", instance)
 		}
 	}
 
 	klog.V(10).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
+
 	return reconcile.Result{}, nil
 }

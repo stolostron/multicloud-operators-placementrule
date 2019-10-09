@@ -66,14 +66,17 @@ func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.Pla
 
 	for k, cl := range clmap {
 		keep := true
+
 		for _, cond := range instance.Spec.ClusterConditions {
 			condMatched := false
+
 			for _, clcond := range cl.Status.Conditions {
 				if cond.Type == clcond.Type {
 					condMatched = true
 					break
 				}
 			}
+
 			if !condMatched {
 				keep = false
 				break
@@ -81,6 +84,7 @@ func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.Pla
 		}
 
 		klog.V(10).Info("Cond Check ", cl.Name, cl.Status.Conditions, keep)
+
 		if !keep {
 			delete(clmap, k)
 		}
@@ -116,6 +120,7 @@ func (ci clusterIndex) Less(x, y int) bool {
 	if !ci.Ascedent {
 		return !less
 	}
+
 	return less
 }
 
@@ -157,9 +162,11 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 	clmap map[string]*clusterv1alpha1.Cluster, clidx *clusterIndex) []appv1alpha1.PlacementDecision {
 	newpd := []appv1alpha1.PlacementDecision{}
 	total := len(clmap)
+
 	if instance.Spec.ClusterReplicas != nil && total > int(*(instance.Spec.ClusterReplicas)) {
 		total = int(*instance.Spec.ClusterReplicas)
 	}
+
 	picked := 0
 
 	// no sort, pick existing decisions first, then clmap
@@ -169,6 +176,7 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			if _, ok := clmap[cli.ClusterName]; !ok {
 				continue
 			}
+
 			if picked < total {
 				newpd = append(newpd, *cli.DeepCopy())
 				delete(clmap, cli.ClusterName)
@@ -177,6 +185,7 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 				break
 			}
 		}
+
 		for _, cl := range clmap {
 			if picked < total {
 				pd := appv1alpha1.PlacementDecision{
@@ -207,7 +216,9 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			}
 		}
 	}
+
 	klog.V(10).Info("New decisions for ", instance.Name, ": ", newpd)
+
 	return newpd
 }
 func (r *ReconcilePlacementRule) filteClustersByPolicies(instance *appv1alpha1.PlacementRule,

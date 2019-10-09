@@ -35,8 +35,10 @@ func ConvertLabels(labelSelector *metav1.LabelSelector) (labels.Selector, error)
 		if err != nil {
 			return labels.Nothing(), err
 		}
+
 		return selector, nil
 	}
+
 	return labels.Everything(), nil
 }
 
@@ -48,6 +50,7 @@ func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 	if klog.V(QuiteLogLel) {
 		fnName := GetFnName()
 		klog.Infof("Entering: %v()", fnName)
+
 		defer klog.Infof("Exiting: %v()", fnName)
 	}
 
@@ -58,17 +61,23 @@ func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 	}
 
 	var crdobj crdv1beta1.CustomResourceDefinition
+
 	var crddata []byte
+
 	crddata, err = ioutil.ReadFile(pathname)
+
 	if err != nil {
 		klog.Fatal("Loading app crd file", err.Error())
 		return err
 	}
+
 	err = yaml.Unmarshal(crddata, &crdobj)
+
 	if err != nil {
 		klog.Fatal("Unmarshal app crd ", err.Error(), "\n", string(crddata))
 		return err
 	}
+
 	klog.V(10).Info("Loaded Application CRD: ", crdobj, "\n - From - \n", string(crddata))
 
 	crd, err := crdClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdobj.GetName(), metav1.GetOptions{})

@@ -30,6 +30,7 @@ func main() {
 
 	flag.InitFlags()
 	logs.InitLogs()
+
 	defer logs.FlushLogs()
 
 	pflag.Parse()

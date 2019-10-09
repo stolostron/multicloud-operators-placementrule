@@ -48,6 +48,7 @@ func TestMain(m *testing.M) {
 	}
 
 	code := m.Run()
+
 	t.Stop()
 	os.Exit(code)
 }

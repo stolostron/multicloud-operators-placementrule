@@ -41,6 +41,7 @@ func TestMain(m *testing.M) {
 			filepath.Join("..", "..", "..", "hack", "test", "crds"),
 		},
 	}
+
 	apis.AddToScheme(scheme.Scheme)
 	clusterv1alpha1.AddToScheme(scheme.Scheme)
 
@@ -50,7 +51,9 @@ func TestMain(m *testing.M) {
 	}
 
 	code := m.Run()
+
 	t.Stop()
+
 	os.Exit(code)
 }
 
@@ -63,6 +66,7 @@ func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan 
 		requests <- req
 		return result, err
 	})
+
 	return fn, requests
 }
 
@@ -71,9 +75,11 @@ func StartTestManager(mgr manager.Manager, g *gomega.GomegaWithT) (chan struct{}
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
+
 	go func() {
 		defer wg.Done()
 		g.Expect(mgr.Start(stop)).NotTo(gomega.HaveOccurred())
 	}()
+
 	return stop, wg
 }
