@@ -79,6 +79,7 @@ func TestReconcile(t *testing.T) {
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
@@ -100,6 +101,7 @@ func TestReconcile(t *testing.T) {
 	}
 	err = c.Create(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), instance)
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
@@ -112,11 +114,13 @@ func TestClusterNames(t *testing.T) {
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
 	defer func() {
 		close(stopMgr)
 		mgrStopped.Wait()
@@ -127,6 +131,7 @@ func TestClusterNames(t *testing.T) {
 
 		err = c.Create(context.TODO(), clinstance)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
+
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
@@ -167,11 +172,13 @@ func TestClusterLabels(t *testing.T) {
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
 	defer func() {
 		close(stopMgr)
 		mgrStopped.Wait()
@@ -181,6 +188,7 @@ func TestClusterLabels(t *testing.T) {
 		clinstance := cl.DeepCopy()
 		err = c.Create(context.TODO(), clinstance)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
+
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
@@ -229,11 +237,13 @@ func TestAllClusters(t *testing.T) {
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
 	defer func() {
 		close(stopMgr)
 		mgrStopped.Wait()
@@ -244,6 +254,7 @@ func TestAllClusters(t *testing.T) {
 
 		err = c.Create(context.TODO(), clinstance)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
+
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
@@ -278,11 +289,13 @@ func TestClusterReplica(t *testing.T) {
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
 	defer func() {
 		close(stopMgr)
 		mgrStopped.Wait()
@@ -293,10 +306,12 @@ func TestClusterReplica(t *testing.T) {
 
 		err = c.Create(context.TODO(), clinstance)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
+
 		defer c.Delete(context.TODO(), clinstance)
 	}
 
 	var rpl int32 = 1
+
 	instance := &appv1alpha1.PlacementRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      prulename,
@@ -330,12 +345,16 @@ func TestClusterChange(t *testing.T) {
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
+
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	c = mgr.GetClient()
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
+
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
 	defer func() {
 		close(stopMgr)
 		mgrStopped.Wait()
@@ -343,7 +362,9 @@ func TestClusterChange(t *testing.T) {
 
 	clinstance := clusters[0].DeepCopy()
 	err = c.Create(context.TODO(), clinstance)
+
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), clinstance)
 
 	instance := &appv1alpha1.PlacementRule{
@@ -369,7 +390,9 @@ func TestClusterChange(t *testing.T) {
 
 	clinstance = clusters[1].DeepCopy()
 	err = c.Create(context.TODO(), clinstance)
+
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), clinstance)
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))

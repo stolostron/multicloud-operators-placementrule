@@ -46,6 +46,7 @@ var ClusterPredicateFunc = predicate.Funcs{
 			}
 			delete(oldcondMap, cond.Type)
 		}
+
 		if len(oldcondMap) > 0 {
 			return true
 		}

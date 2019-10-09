@@ -46,25 +46,33 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 		for _, cl := range placement.Clusters {
 			namereq.Values = append(namereq.Values, cl.Name)
 		}
+
 		labelSelector = &metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{namereq},
 		}
 	} else {
 		labelSelector = placement.ClusterSelector
 	}
+
 	clSelector, err := ConvertLabels(labelSelector)
+
 	if err != nil {
 		return nil, err
 	}
+
 	klog.V(10).Info("Using Cluster LabelSelector ", clSelector)
+
 	cllist := &clusterv1alpha1.ClusterList{}
+
 	err = kubeclient.List(context.TODO(), &client.ListOptions{LabelSelector: clSelector}, cllist)
+
 	if err != nil && !errors.IsNotFound(err) {
 		klog.Error("Listing clusters and found error: ", err)
 		return nil, err
 	}
 
 	klog.V(10).Info("listed clusters:", cllist.Items)
+
 	for _, cl := range cllist.Items {
 		clmap[cl.Name] = cl.DeepCopy()
 	}
