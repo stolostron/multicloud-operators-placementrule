@@ -98,8 +98,8 @@ test:
 # build section
 ############################################################
 
-build: test
-	common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
+build: 
+	@common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
 
 ############################################################
 # images section
