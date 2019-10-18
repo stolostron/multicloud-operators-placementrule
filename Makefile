@@ -50,7 +50,7 @@ else
     $(error "This system's OS $(LOCAL_OS) isn't recognized/supported")
 endif
 
-all: fmt check test build images
+all: fmt check test coverage build images
 
 ifneq ("$(realpath $(DEST))", "$(realpath $(PWD))")
     $(error Please run 'make' from $(DEST). Current directory is $(PWD))
@@ -94,6 +94,15 @@ lint: lint-all
 test:
 	@go test ${TESTARGS} ./...
 
+# coverage section
+ ############################################################
+ 
+coverage:
+	@common/scripts/codecov.sh
+ 
+ 
+############################################################
+
 ############################################################
 # build section
 ############################################################
@@ -114,7 +123,7 @@ endif
 build-push-images: $(CONFIG_DOCKER_TARGET)
 	@docker build . -f Dockerfile -t $(REGISTRY)/$(IMG):$(VERSION)
 	@docker push $(REGISTRY)/$(IMG):$(VERSION)
-    @docker tag $(REGISTRY)/$(IMG):$(VERSION) $(REGISTRY)/$(IMG)
+	@docker tag $(REGISTRY)/$(IMG):$(VERSION) $(REGISTRY)/$(IMG)
 	@docker push $(REGISTRY)/$(IMG)
 
 ############################################################
@@ -123,4 +132,4 @@ build-push-images: $(CONFIG_DOCKER_TARGET)
 clean:
 	rm -f build/_output/bin/$(IMG)
 
-.PHONY: all build check lint test images
+.PHONY: all build check lint test coverage images

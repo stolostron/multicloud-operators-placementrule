@@ -91,6 +91,11 @@ func (in *Placement) DeepCopyInto(out *Placement) {
 		*out = new(corev1.ObjectReference)
 		**out = **in
 	}
+	if in.Local != nil {
+		in, out := &in.Local, &out.Local
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
