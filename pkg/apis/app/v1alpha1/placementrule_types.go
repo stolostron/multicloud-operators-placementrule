@@ -27,10 +27,12 @@ const (
 	SchedulerNameMCM = "mcm"
 )
 
+// +k8s:deepcopy-gen:nonpointer-interfaces=true
 // Placement field to be referenced in specs, align with Fedv2, add placementref
 type Placement struct {
 	GenericPlacementFields `json:",inline"`
 	PlacementRef           *corev1.ObjectReference `json:"placementRef,omitempty"`
+	Local                  *bool                   `json:"local,omitempty"`
 }
 
 // ClusterConditionFilter defines filter to filter cluster condition
