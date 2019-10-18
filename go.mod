@@ -8,7 +8,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0
-	github.com/operator-framework/operator-sdk v0.10.1-0.20191001215102-e47857e3a01d
+	github.com/operator-framework/operator-sdk v0.10.0
 	github.com/prometheus/client_golang v0.9.3 // indirect
 	github.com/prometheus/common v0.4.0
 	github.com/rogpeppe/go-internal v1.3.2 // indirect
@@ -54,7 +54,5 @@ replace (
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.1.12
 	sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.1.11-0.20190411181648-9d55346c2bde
 )
-
-replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.10.0
 
 go 1.13
