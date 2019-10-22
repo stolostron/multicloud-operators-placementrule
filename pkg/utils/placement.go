@@ -28,6 +28,14 @@ import (
 	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 )
 
+func ToPlaceLocal(placement *appv1alpha1.Placement) bool {
+	if placement == nil || placement.Local == nil {
+		return false
+	}
+
+	return *placement.Local
+}
+
 // PlaceByGenericPlacmentFields search with basic placement criteria
 // Top priority: clusterNames, ignore selector
 // Bottomline: Use label selector

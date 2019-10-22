@@ -10,14 +10,13 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [Top level title](#top-level-title)
-    - [What is the XXX](#what-is-the-xxx)
-    - [Community, discussion, contribution, and support](#community-discussion-contribution-and-support)
-    - [Getting Started](#getting-started)
-        - [Prerequisites](#prerequisites)
-        - [XXXXX](#xxxxx)
-        - [Trouble shooting](#trouble-shooting)
-    - [XXX References](#xxx-references)
+- [What is the multicloud-operators-placementrule](#what-is-the-multicloud-operators-placementrule)
+- [Community, discussion, contribution, and support](#community-discussion-contribution-and-support)
+- [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [XXXXX](#xxxxx)
+    - [Trouble shooting](#trouble-shooting)
+- [XXX References](#xxx-references)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
