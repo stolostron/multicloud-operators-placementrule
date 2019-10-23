@@ -3,26 +3,26 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Contributing guidelines](#contributing-guidelines)
-    - [Sign the CLA](#sign-the-cla)
+    - [Developer Certificate of Origin](#developer-certificate-of-origin)
     - [Contributing A Patch](#contributing-a-patch)
     - [Issue and Pull Request Management](#issue-and-pull-request-management)
     - [Pre-check before submitting a PR](#pre-check-before-submitting-a-pr)
-    - [Build and push images](#build-and-push-images)
+    - [Build images](#build-images)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Contributing guidelines
 
-## Sign the CLA
+## Developer Certificate of Origin
 
-IBM cloud projects require that you sign a Contributor License Agreement (CLA) before we can accept your pull requests.  Please see xxx for more info
+This repository built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
 
 ## Contributing A Patch
 
 1. Submit an issue describing your proposed change to the repo in question.
 1. The [repo owners](OWNERS) will respond to your issue promptly.
-1. If your proposed change is accepted, and you haven't already done so, sign a Contributor License Agreement (see details above).
 1. Fork the desired repo, develop and test your code changes.
+1. Commit your changes with DCO
 1. Submit a pull request.
 
 ## Issue and Pull Request Management
@@ -43,13 +43,13 @@ make check
 make test
 ```
 
-## Build and push images
+## Build images
 
-Make sure your code build passed:
+Make sure your code build passed. 
 
 ```shell
-export REGISTRY=<your-docker-registry>
-make build-push-images
+export BUILD_LOCALLY=1
+make
 ```
 
 Now, you can follow the [getting started guide](./README.md#getting-started) to work with the xxx.
