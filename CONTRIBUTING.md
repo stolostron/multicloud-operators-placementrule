@@ -36,7 +36,7 @@ Repo maintainers can assign you an issue or pull request by leaving a
 
 ## Pre-check before submitting a PR
 
-After your PR is ready to commit, please run following commands to check your code:
+After your PR is ready to commit, please run following commands to check your code.
 
 ```shell
 make check
@@ -45,7 +45,7 @@ make test
 
 ## Build images
 
-Make sure your code build passed. 
+Make sure your code build passed.
 
 ```shell
 export BUILD_LOCALLY=1
