@@ -72,7 +72,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 
 	cllist := &clusterv1alpha1.ClusterList{}
 
-	err = kubeclient.List(context.TODO(), &client.ListOptions{LabelSelector: clSelector}, cllist)
+	err = kubeclient.List(context.TODO(), cllist, &client.ListOptions{LabelSelector: clSelector})
 
 	if err != nil && !errors.IsNotFound(err) {
 		klog.Error("Listing clusters and found error: ", err)

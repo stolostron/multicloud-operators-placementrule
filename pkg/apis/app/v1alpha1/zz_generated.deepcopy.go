@@ -157,7 +157,7 @@ func (in *PlacementRule) DeepCopyObject() runtime.Object {
 func (in *PlacementRuleList) DeepCopyInto(out *PlacementRuleList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]PlacementRule, len(*in))

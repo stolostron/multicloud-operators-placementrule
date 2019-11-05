@@ -15,12 +15,14 @@
 package main
 
 import (
+	"flag"
+
 	"github.com/spf13/pflag"
-	"k8s.io/apiserver/pkg/util/flag"
-	"k8s.io/apiserver/pkg/util/logs"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
+	"k8s.io/klog"
 
 	"github.com/IBM/multicloud-operators-placementrule/cmd/manager/exec"
 )
@@ -28,10 +30,12 @@ import (
 func main() {
 	exec.ProcessFlags()
 
-	flag.InitFlags()
-	logs.InitLogs()
+	klog.InitFlags(nil)
 
-	defer logs.FlushLogs()
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	pflag.Parse()
+
+	defer klog.Flush()
 
 	pflag.Parse()
 
