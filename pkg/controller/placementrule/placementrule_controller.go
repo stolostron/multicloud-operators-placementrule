@@ -99,7 +99,7 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 	plList := &appv1alpha1.PlacementRuleList{}
 
 	listopts := &client.ListOptions{}
-	err := mapper.List(context.TODO(), listopts, plList)
+	err := mapper.List(context.TODO(), plList, listopts)
 
 	if err != nil {
 		klog.Error("Failed to list placement rules in mapper with err:", err)
@@ -133,7 +133,7 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.
 	plList := &appv1alpha1.PlacementRuleList{}
 
 	listopts := &client.ListOptions{}
-	err := mapper.List(context.TODO(), listopts, plList)
+	err := mapper.List(context.TODO(), plList, listopts)
 
 	if err != nil {
 		klog.Error("Failed to list placement rules in mapper with err:", err)
