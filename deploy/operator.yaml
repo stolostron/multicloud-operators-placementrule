@@ -16,7 +16,7 @@ spec:
       containers:
         - name: multicloud-operators-placementrule
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: quay.io/multicloudlab/multicloud-operators-placementrule
           command:
           - multicloud-operators-placementrule
           imagePullPolicy: Always
