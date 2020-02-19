@@ -1,0 +1,16 @@
+apiVersion: multicloud.io/v1alpha1
+kind: PlacementRule
+metadata:
+  name: allclusters
+  namespace: default
+spec:
+  clusterLabels: {}
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: PlacementRule
+metadata:
+  name: allclusters-2
+  namespace: default
+spec:
+  clusterLabels: {}
+

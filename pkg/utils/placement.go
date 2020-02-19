@@ -16,6 +16,7 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +26,7 @@ import (
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 )
 
 func ToPlaceLocal(placement *appv1alpha1.Placement) bool {
@@ -86,4 +87,14 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 	}
 
 	return clmap, nil
+}
+
+func InstanceDeepCopy(a, b interface{}) error {
+	byt, err := json.Marshal(a)
+
+	if err == nil {
+		err = json.Unmarshal(byt, b)
+	}
+
+	return err
 }

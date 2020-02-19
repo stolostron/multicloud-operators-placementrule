@@ -1,0 +1,7 @@
+apiVersion: multicloud.io/v1alpha1
+kind: PlacementRule
+metadata:
+  name: example-placementrule
+spec:
+  # Add fields here
+  size: 3

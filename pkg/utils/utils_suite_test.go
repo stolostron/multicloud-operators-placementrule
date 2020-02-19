@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/IBM/multicloud-operators-placementrule/pkg/apis"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 )
 
 var cfg *rest.Config
