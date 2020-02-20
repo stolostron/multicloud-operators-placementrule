@@ -1,8 +1,10 @@
-sudo: required
-language: go
 
 dist: trusty
 
+os:
+  - linux
+
+language: go
 go:
   - "1.13"
 
