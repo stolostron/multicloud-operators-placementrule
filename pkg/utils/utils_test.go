@@ -53,7 +53,8 @@ func TestLocal(t *testing.T) {
 func TestLoadCRD(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/app_v1alpha1_placementrule_crd.yaml")).NotTo(gomega.HaveOccurred())
+	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/app.ibm.com_placementrules_crd.yaml")).NotTo(gomega.HaveOccurred())
+	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/multicloud.io_placementrules_crd.yaml")).NotTo(gomega.HaveOccurred())
 }
 
 func TestEventRecorder(t *testing.T) {
