@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This repo is build locally for dev/test by default;
-# Override this variable in CI env.
-BUILD_LOCALLY ?= 1
+# This repo is build in Travis-ci by default;
+# Override this variable in local env.
+TRAVIS_BUILD ?= 1
 
 # Image URL to use all building/pushing image targets;
 # Use your own docker registry and image name for dev/test by overridding the IMG and REGISTRY environment variable.
@@ -61,7 +61,7 @@ endif
 GITHUB_USER := $(shell echo $(GITHUB_USER) | sed 's/@/%40/g')
 GITHUB_TOKEN ?=
 
-ifeq ($(BUILD_LOCALLY),0)
+ifeq ($(TRAVIS_BUILD),1)
   -include $(shell curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v4.raw' -L https://api.github.com/repos/open-cluster-management/build-harness-extensions/contents/templates/Makefile.build-harness-bootstrap -o .build-harness-bootstrap; echo .build-harness-bootstrap)
 endif
 
