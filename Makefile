@@ -128,8 +128,8 @@ local:
 ############################################################
 
 build-images:
-	@operator-sdk build $(REGISTRY)/$(IMG):$(VERSION)
-	@docker tag $(REGISTRY)/$(IMG):$(VERSION) $(REGISTRY)/$(IMG)
+	@operator-sdk build ${IMAGE_NAME_AND_VERSION}
+	@docker tag ${IMAGE_NAME_AND_VERSION} $(REGISTRY)/$(IMG):latest
 
 
 ############################################################
