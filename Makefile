@@ -144,7 +144,7 @@ build-push-images: install-operator-sdk $(CONFIG_DOCKER_TARGET)
 ############################################################
 # clean section
 ############################################################
-clean:
+clean::
 	rm -f build/_output/bin/$(IMG)
 
 .PHONY: all build check lint test coverage images
