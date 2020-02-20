@@ -48,8 +48,7 @@ jobs:
     - stage: lint
       name: "Run code lint"
       if: type = pull_request
-      script:
-        - make lint
+      script: bash ${TRAVIS_BUILD_DIR}/build/run-code-lint.sh
     - stage: build
       name: "Build the image and run unit tests"
       script:
