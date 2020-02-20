@@ -49,7 +49,7 @@ jobs:
       name: "Run code lint"
       if: type = pull_request
       script:
-        - make lint fmt
+        - make lint
     - stage: build
       name: "Build the image and run unit tests"
       script:
