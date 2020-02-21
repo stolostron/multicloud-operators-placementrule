@@ -18,7 +18,7 @@ import (
 	"context"
 
 	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
-	multicloudv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloud/v1alpha1"
+	multicloudv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1alpha1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -165,7 +165,7 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=app.ibm.com,resources=placementrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.ibm.com,resources=placementrules/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=multicloud.io,resources=placementrules,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=multicloud-apps.io,resources=placementrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=multicloud.io,resources=placementrules/status,verbs=get;update;patch
 func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the PlacementRule instance

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package multicloud contains multicloud API versions.
+// Package multicloudapps contains multicloudapps API versions.
 //
-// This file ensures Go source parsers acknowledge the multicloud package
+// This file ensures Go source parsers acknowledge the multicloudapps package
 // and any child packages. It can be removed if any other Go source files are
 // added to this package.
-package multicloud
+package multicloudapps
