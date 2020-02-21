@@ -60,7 +60,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - multicloud.io
+  - multicloud-apps.io
   resources:
   - '*'
   verbs:

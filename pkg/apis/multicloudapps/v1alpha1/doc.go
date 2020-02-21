@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package apis
-
-import (
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloud/v1alpha1"
-)
-
-func init() {
-	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
-	AddToSchemes = append(AddToSchemes, v1alpha1.SchemeBuilder.AddToScheme)
-}
+// Package v1alpha1 contains API Schema definitions for the multicloud-apps v1alpha1 API group
+// +k8s:deepcopy-gen=package,register
+// +groupName=multicloud-apps.io
+package v1alpha1
