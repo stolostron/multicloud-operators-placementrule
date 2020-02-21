@@ -12,32 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
-
-import (
-	"flag"
-
-	"github.com/spf13/pflag"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
-	"k8s.io/klog"
-
-	"github.com/open-cluster-management/multicloud-operators-placementrule/cmd/manager/exec"
-)
-
-func main() {
-	exec.ProcessFlags()
-
-	klog.InitFlags(nil)
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-
-	defer klog.Flush()
-
-	pflag.Parse()
-
-	exec.RunManager()
-}
+// Package multicloud contains multicloud API versions.
+//
+// This file ensures Go source parsers acknowledge the multicloud package
+// and any child packages. It can be removed if any other Go source files are
+// added to this package.
+package multicloud

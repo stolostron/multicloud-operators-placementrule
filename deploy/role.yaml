@@ -59,3 +59,9 @@ rules:
   - '*'
   verbs:
   - '*'
+- apiGroups:
+  - multicloud.io
+  resources:
+  - '*'
+  verbs:
+  - '*'

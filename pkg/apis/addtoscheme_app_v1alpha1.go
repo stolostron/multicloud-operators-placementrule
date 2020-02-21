@@ -15,7 +15,7 @@
 package apis
 
 import (
-	"github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 )
 
 func init() {

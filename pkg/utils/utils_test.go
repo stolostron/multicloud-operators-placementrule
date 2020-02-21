@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
 )
 
 func TestLocal(t *testing.T) {
@@ -53,7 +53,8 @@ func TestLocal(t *testing.T) {
 func TestLoadCRD(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/app_v1alpha1_placementrule_crd.yaml")).NotTo(gomega.HaveOccurred())
+	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/app.ibm.com_placementrules_crd.yaml")).NotTo(gomega.HaveOccurred())
+	g.Expect(CheckAndInstallCRD(cfg, "../../deploy/crds/multicloud.io_placementrules_crd.yaml")).NotTo(gomega.HaveOccurred())
 }
 
 func TestEventRecorder(t *testing.T) {

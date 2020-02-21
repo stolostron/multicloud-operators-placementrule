@@ -24,8 +24,8 @@ import (
 
 	"github.com/prometheus/common/log"
 
-	"github.com/IBM/multicloud-operators-placementrule/pkg/apis"
-	"github.com/IBM/multicloud-operators-placementrule/pkg/controller"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -37,7 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	"k8s.io/klog"
 )

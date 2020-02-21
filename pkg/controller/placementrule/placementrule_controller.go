@@ -17,8 +17,9 @@ package placementrule
 import (
 	"context"
 
-	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
-	"github.com/IBM/multicloud-operators-placementrule/pkg/utils"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	multicloudv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloud/v1alpha1"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -64,6 +65,11 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to PlacementRule
 	err = c.Watch(&source.Kind{Type: &appv1alpha1.PlacementRule{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	err = c.Watch(&source.Kind{Type: &multicloudv1alpha1.PlacementRule{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -159,10 +165,22 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=app.ibm.com,resources=placementrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.ibm.com,resources=placementrules/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=multicloud.io,resources=placementrules,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=multicloud.io,resources=placementrules/status,verbs=get;update;patch
 func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the PlacementRule instance
 	instance := &appv1alpha1.PlacementRule{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
+
+	isMulticloudInstance := false
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			instance := &multicloudv1alpha1.PlacementRule{}
+			isMulticloudInstance = true
+			err = r.Get(context.TODO(), request.NamespacedName, instance)
+		}
+	}
 
 	klog.Info("Reconciling:", request.NamespacedName, " with Get err:", err)
 
@@ -215,14 +233,37 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 	// reconcile finished check if need to upadte the resource
 	if updated {
 		klog.Info("Update placementrule ", instance.Name, " with decisions: ", instance.Status.Decisions)
-		err = r.Status().Update(context.Background(), instance)
-
-		if err != nil {
-			klog.Error("Error returned when updating placementrule decisions:", err, "instance:", instance)
-		}
+		err = r.UpdateStatus(isMulticloudInstance, request, instance)
 	}
 
 	klog.V(10).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcilePlacementRule) UpdateStatus(isMulticloudInstance bool, request reconcile.Request, instance *appv1alpha1.PlacementRule) error {
+	var err error
+
+	if isMulticloudInstance {
+		multicloudInstance := &multicloudv1alpha1.PlacementRule{}
+
+		err = r.Get(context.TODO(), request.NamespacedName, multicloudInstance)
+
+		if err == nil {
+			err1 := utils.InstanceDeepCopy(instance.Status, &multicloudInstance.Status)
+			if err1 == nil {
+				err = r.Status().Update(context.TODO(), multicloudInstance)
+			} else {
+				err = err1
+			}
+		}
+	} else {
+		err = r.Status().Update(context.TODO(), instance)
+	}
+
+	if err != nil {
+		klog.Error("Error returned when updating placementrule decisions:", err, " ,instance:", instance)
+	}
+
+	return err
 }

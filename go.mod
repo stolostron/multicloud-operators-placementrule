@@ -1,4 +1,4 @@
-module github.com/IBM/multicloud-operators-placementrule
+module github.com/open-cluster-management/multicloud-operators-placementrule
 
 go 1.13
 

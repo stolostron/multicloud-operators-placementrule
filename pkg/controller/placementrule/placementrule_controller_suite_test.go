@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/IBM/multicloud-operators-placementrule/pkg/apis"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 )
 
 var cfg *rest.Config

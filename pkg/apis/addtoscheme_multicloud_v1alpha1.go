@@ -12,32 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package apis
 
 import (
-	"flag"
-
-	"github.com/spf13/pflag"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
-	"k8s.io/klog"
-
-	"github.com/open-cluster-management/multicloud-operators-placementrule/cmd/manager/exec"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloud/v1alpha1"
 )
 
-func main() {
-	exec.ProcessFlags()
-
-	klog.InitFlags(nil)
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-
-	defer klog.Flush()
-
-	pflag.Parse()
-
-	exec.RunManager()
+func init() {
+	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
+	AddToSchemes = append(AddToSchemes, v1alpha1.SchemeBuilder.AddToScheme)
 }

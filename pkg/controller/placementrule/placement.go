@@ -17,11 +17,8 @@ package placementrule
 import (
 	"k8s.io/klog"
 
-	appv1alpha1 "github.com/IBM/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
-	"github.com/IBM/multicloud-operators-placementrule/pkg/utils"
-
-	//	mcmv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-api/pkg/apis/mcm/v1alpha1"
-	//	policyv1alpha1 "github.ibm.com/IBMPrivateCloud/hcm-compliance/pkg/apis/policy/v1alpha1"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"sort"
 

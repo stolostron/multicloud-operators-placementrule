@@ -1,9 +1,9 @@
 # multicloud-operators-placementrule
 
 [![Build](http://35.227.205.240/badge.svg?jobs=build_multicloud-operators-placementrule)](http://35.227.205.240/badge.svg?jobs=build_multicloud-operators-placementrule)
-[![GoDoc](https://godoc.org/github.com/IBM/multicloud-operators-placementrule?status.svg)](https://godoc.org/github.com/IBM/multicloud-operators-placementrule)
-[![Go Report Card](https://goreportcard.com/badge/github.com/IBM/multicloud-operators-placementrule)](https://goreportcard.com/report/github.com/IBM/multicloud-operators-placementrule)
-[![Code Coverage](https://codecov.io/gh/IBM/multicloud-operators-placementrule/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/IBM/multicloud-operators-placementrule?branch=master)
+[![GoDoc](https://godoc.org/github.com/open-cluster-management/multicloud-operators-placementrule?status.svg)](https://godoc.org/github.com/open-cluster-management/multicloud-operators-placementrule)
+[![Go Report Card](https://goreportcard.com/badge/github.com/open-cluster-management/multicloud-operators-placementrule)](https://goreportcard.com/report/github.com/open-cluster-management/multicloud-operators-placementrule)
+[![Code Coverage](https://codecov.io/gh/open-cluster-management/multicloud-operators-placementrule/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/open-cluster-management/multicloud-operators-placementrule?branch=master)
 [![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
