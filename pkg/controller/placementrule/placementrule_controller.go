@@ -224,9 +224,7 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 }
 
 func (r *ReconcilePlacementRule) UpdateStatus(request reconcile.Request, instance *appv1alpha1.PlacementRule) error {
-	var err error
-
-	err = r.Status().Update(context.TODO(), instance)
+	err := r.Status().Update(context.TODO(), instance)
 
 	if err != nil {
 		klog.Error("Error returned when updating placementrule decisions:", err, " ,instance:", instance)
