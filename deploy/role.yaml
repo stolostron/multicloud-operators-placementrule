@@ -63,5 +63,6 @@ rules:
   - multicloud-apps.io
   resources:
   - '*'
+  - placementrules
   verbs:
   - '*'

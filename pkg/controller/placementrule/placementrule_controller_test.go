@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/app/v1alpha1"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1"
 )
 
 var c client.Client
