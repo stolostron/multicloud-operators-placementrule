@@ -17,7 +17,7 @@ package placementrule
 import (
 	"context"
 
-	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1"
+	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"k8s.io/apimachinery/pkg/api/errors"
