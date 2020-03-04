@@ -25,11 +25,11 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1.PlacementRule": schema_pkg_apis_multicloudapps_v1_PlacementRule(ref),
+		"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1.PlacementRule": schema_pkg_apis_apps_v1_PlacementRule(ref),
 	}
 }
 
-func schema_pkg_apis_multicloudapps_v1_PlacementRule(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_apps_v1_PlacementRule(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -57,18 +57,18 @@ func schema_pkg_apis_multicloudapps_v1_PlacementRule(ref common.ReferenceCallbac
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1.PlacementRuleSpec"),
+							Ref: ref("github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1.PlacementRuleSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1.PlacementRuleStatus"),
+							Ref: ref("github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1.PlacementRuleStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1.PlacementRuleSpec", "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/multicloudapps/v1.PlacementRuleStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1.PlacementRuleSpec", "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1.PlacementRuleStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
