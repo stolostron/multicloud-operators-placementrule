@@ -1,11 +1,11 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1-398
 
-ENV OPERATOR=/usr/local/bin/multicloud-operators-placementrule \
+ENV OPERATOR=/usr/local/bin/multicluster-operators-placementrule \
     USER_UID=1001 \
-    USER_NAME=multicloud-operators-placementrule
+    USER_NAME=multicluster-operators-placementrule
 
 # install operator binary
-COPY build/_output/bin/multicloud-operators-placementrule ${OPERATOR}
+COPY build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
 
 COPY build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
