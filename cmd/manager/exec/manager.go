@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"k8s.io/client-go/rest"
 
@@ -26,6 +27,7 @@ import (
 
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -35,6 +37,8 @@ import (
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
@@ -137,13 +141,19 @@ func RunManager() {
 		}
 	}
 
+	sig := signals.SetupSignalHandler()
+
+	klog.Info("Detecting ACM cluster API service...")
+	detectClusterRegistry(mgr.GetAPIReader(), sig)
+
 	klog.Info("Starting the Cmd.")
 
 	// Start the Cmd
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(sig); err != nil {
 		klog.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
+
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
@@ -164,4 +174,16 @@ func serveCRMetrics(cfg *rest.Config) error {
 	ns := []string{operatorNs}
 	// Generate and serve custom resource specific metrics.
 	return kubemetrics.GenerateAndServeCRMetrics(cfg, ns, filteredGVK, metricsHost, operatorMetricsPort)
+}
+
+// detectClusterRegistry - Detect the ACM cluster API service every 10 seconds. the controller will be exited when it is ready
+// The controller will be auto restarted by the multicluster-operators-application deployment CR later.
+func detectClusterRegistry(clReader client.Reader, s <-chan struct{}) {
+	if !utils.IsReadyACMClusterRegistry(clReader) {
+		go wait.Until(func() {
+			if utils.IsReadyACMClusterRegistry(clReader) {
+				os.Exit(1)
+			}
+		}, time.Duration(10)*time.Second, s)
+	}
 }

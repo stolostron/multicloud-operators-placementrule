@@ -98,3 +98,21 @@ func InstanceDeepCopy(a, b interface{}) error {
 
 	return err
 }
+
+// IsReadyACMClusterRegistry check if ACM Cluster API service is ready or not.
+func IsReadyACMClusterRegistry(clReader client.Reader) bool {
+	cllist := &clusterv1alpha1.ClusterList{}
+
+	listopts := &client.ListOptions{}
+
+	err := clReader.List(context.TODO(), cllist, listopts)
+
+	if err == nil {
+		klog.Error("ACM Cluster API service ready")
+		return true
+	}
+
+	klog.Error("ACM Cluster API service NOT ready: ", err)
+
+	return false
+}
