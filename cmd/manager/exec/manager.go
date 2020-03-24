@@ -153,7 +153,6 @@ func RunManager() {
 		klog.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
-
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
