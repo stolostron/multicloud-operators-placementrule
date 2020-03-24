@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"time"
 
 	"k8s.io/client-go/rest"
 
@@ -37,8 +36,6 @@ import (
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
@@ -144,7 +141,7 @@ func RunManager() {
 	sig := signals.SetupSignalHandler()
 
 	klog.Info("Detecting ACM cluster API service...")
-	detectClusterRegistry(mgr.GetAPIReader(), sig)
+	utils.DetectClusterRegistry(mgr.GetAPIReader(), sig)
 
 	klog.Info("Starting the Cmd.")
 
@@ -173,16 +170,4 @@ func serveCRMetrics(cfg *rest.Config) error {
 	ns := []string{operatorNs}
 	// Generate and serve custom resource specific metrics.
 	return kubemetrics.GenerateAndServeCRMetrics(cfg, ns, filteredGVK, metricsHost, operatorMetricsPort)
-}
-
-// detectClusterRegistry - Detect the ACM cluster API service every 10 seconds. the controller will be exited when it is ready
-// The controller will be auto restarted by the multicluster-operators-application deployment CR later.
-func detectClusterRegistry(clReader client.Reader, s <-chan struct{}) {
-	if !utils.IsReadyACMClusterRegistry(clReader) {
-		go wait.Until(func() {
-			if utils.IsReadyACMClusterRegistry(clReader) {
-				os.Exit(1)
-			}
-		}, time.Duration(10)*time.Second, s)
-	}
 }
