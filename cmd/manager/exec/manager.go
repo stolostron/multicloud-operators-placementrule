@@ -26,6 +26,7 @@ import (
 
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
+	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -137,10 +138,15 @@ func RunManager() {
 		}
 	}
 
+	sig := signals.SetupSignalHandler()
+
+	klog.Info("Detecting ACM cluster API service...")
+	utils.DetectClusterRegistry(mgr.GetAPIReader(), sig)
+
 	klog.Info("Starting the Cmd.")
 
 	// Start the Cmd
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(sig); err != nil {
 		klog.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}

@@ -17,10 +17,13 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"k8s.io/klog"
@@ -97,4 +100,34 @@ func InstanceDeepCopy(a, b interface{}) error {
 	}
 
 	return err
+}
+
+// IsReadyACMClusterRegistry check if ACM Cluster API service is ready or not.
+func IsReadyACMClusterRegistry(clReader client.Reader) bool {
+	cllist := &clusterv1alpha1.ClusterList{}
+
+	listopts := &client.ListOptions{}
+
+	err := clReader.List(context.TODO(), cllist, listopts)
+
+	if err == nil {
+		klog.Error("ACM Cluster API service ready")
+		return true
+	}
+
+	klog.Error("ACM Cluster API service NOT ready: ", err)
+
+	return false
+}
+
+// DetectClusterRegistry - Detect the ACM cluster API service every 10 seconds. the controller will be exited when it is ready
+// The controller will be auto restarted by the multicluster-operators-application deployment CR later.
+func DetectClusterRegistry(clReader client.Reader, s <-chan struct{}) {
+	if !IsReadyACMClusterRegistry(clReader) {
+		go wait.Until(func() {
+			if IsReadyACMClusterRegistry(clReader) {
+				os.Exit(1)
+			}
+		}, time.Duration(10)*time.Second, s)
+	}
 }
