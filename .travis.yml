@@ -58,6 +58,7 @@ jobs:
           make component/build
           make component/push
           make build-latest-community-operator
+          make security/scans
     - stage: unit-test
       name: "Run unit test"
       script:
