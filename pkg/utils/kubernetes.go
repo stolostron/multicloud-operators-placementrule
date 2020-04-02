@@ -16,6 +16,7 @@ package utils
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"reflect"
 
 	"github.com/ghodss/yaml"
@@ -63,6 +64,8 @@ func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 	var crdobj crdv1beta1.CustomResourceDefinition
 
 	var crddata []byte
+
+	pathname = filepath.Clean(pathname)
 
 	crddata, err = ioutil.ReadFile(pathname)
 
