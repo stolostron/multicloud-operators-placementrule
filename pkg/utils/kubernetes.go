@@ -65,9 +65,7 @@ func CheckAndInstallCRD(crdconfig *rest.Config, pathname string) error {
 
 	var crddata []byte
 
-	pathname = filepath.Clean(pathname)
-
-	crddata, err = ioutil.ReadFile(pathname)
+	crddata, err = ioutil.ReadFile(filepath.Clean(pathname))
 
 	if err != nil {
 		klog.Fatal("Loading app crd file", err.Error())
