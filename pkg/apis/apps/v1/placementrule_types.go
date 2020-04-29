@@ -25,6 +25,12 @@ const (
 	SchedulerNameDefault = "default"
 	// SchedulerNameMCM tells using mcm as scheduler
 	SchedulerNameMCM = "mcm"
+
+	// UserIdentityAnnotation is user identity annotation
+	UserIdentityAnnotation = "mcm.ibm.com/user-identity"
+
+	// UserGroupAnnotation is user group annotation
+	UserGroupAnnotation = "mcm.ibm.com/user-group"
 )
 
 // +k8s:deepcopy-gen:nonpointer-interfaces=true
