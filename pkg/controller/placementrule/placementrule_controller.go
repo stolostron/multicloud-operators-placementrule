@@ -217,10 +217,10 @@ func (r *ReconcilePlacementRule) Reconcile(request reconcile.Request) (reconcile
 	// reconcile finished check if need to upadte the resource
 	if updated {
 		klog.Info("Update placementrule ", instance.Name, " with decisions: ", instance.Status.Decisions)
-		err = r.UpdateStatus(request, instance)
+		err = r.Status().Update(context.TODO(), instance)
 	}
 
-	klog.V(10).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
+	klog.V(1).Info("Reconciling - finished.", request.NamespacedName, " with Get err:", err)
 
 	return reconcile.Result{}, nil
 }

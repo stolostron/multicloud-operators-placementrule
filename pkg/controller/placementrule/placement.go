@@ -39,6 +39,12 @@ func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRul
 		return err
 	}
 
+	err = r.filteClustersByUser(instance, clmap)
+	if err != nil {
+		klog.Error("Error in filtering clusters by user Identity:", err)
+		return err
+	}
+
 	err = r.filteClustersByPolicies(instance, clmap /* , clstatusmap */)
 	if err != nil {
 		klog.Error("Error in filtering clusters by policy:", err)
@@ -218,10 +224,35 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 
 	return newpd
 }
+
 func (r *ReconcilePlacementRule) filteClustersByPolicies(instance *appv1alpha1.PlacementRule,
 	clmap map[string]*clusterv1alpha1.Cluster /* , clstatusmap map[string]*mcmv1alpha1.ClusterStatus */) error {
 	if instance == nil || instance.Spec.Policies == nil || clmap == nil {
 		return nil
+	}
+
+	return nil
+}
+
+func (r *ReconcilePlacementRule) filteClustersByUser(instance *appv1alpha1.PlacementRule,
+	clmap map[string]*clusterv1alpha1.Cluster) error {
+	if instance == nil || clmap == nil {
+		return nil
+	}
+
+	annotations := instance.GetAnnotations()
+	if annotations == nil {
+		return nil
+	}
+
+	if _, ok := annotations[appv1alpha1.UserIdentityAnnotation]; !ok {
+		return nil
+	}
+
+	err := utils.FilteClustersByIdentity(r.authClient, instance, clmap)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
