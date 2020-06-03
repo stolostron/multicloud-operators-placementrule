@@ -15,12 +15,14 @@
 package utils
 
 import (
+	"context"
 	"encoding/base64"
 	"strings"
 
 	appv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	rbacv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
@@ -100,7 +102,7 @@ func filterClusterByUserIdentity(
 				Groups: groups,
 			},
 		}
-		result, err := kubeclient.AuthorizationV1().SubjectAccessReviews().Create(sar)
+		result, err := kubeclient.AuthorizationV1().SubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
 
 		if err != nil {
 			continue
