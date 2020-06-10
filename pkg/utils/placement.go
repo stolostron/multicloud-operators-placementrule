@@ -20,12 +20,12 @@ import (
 	"os"
 	"time"
 
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -44,8 +44,8 @@ func ToPlaceLocal(placement *appv1alpha1.Placement) bool {
 // Top priority: clusterNames, ignore selector
 // Bottomline: Use label selector
 func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha1.GenericPlacementFields,
-	authclient kubernetes.Interface, object runtime.Object) (map[string]*clusterv1alpha1.Cluster, error) {
-	clmap := make(map[string]*clusterv1alpha1.Cluster)
+	authclient kubernetes.Interface, object runtime.Object) (map[string]*spokeClusterV1.ManagedCluster, error) {
+	clmap := make(map[string]*spokeClusterV1.ManagedCluster)
 
 	var labelSelector *metav1.LabelSelector
 
@@ -74,7 +74,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 
 	klog.V(10).Info("Using Cluster LabelSelector ", clSelector)
 
-	cllist := &clusterv1alpha1.ClusterList{}
+	cllist := &spokeClusterV1.ManagedClusterList{}
 
 	err = kubeclient.List(context.TODO(), cllist, &client.ListOptions{LabelSelector: clSelector})
 
@@ -83,7 +83,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 		return nil, err
 	}
 
-	klog.V(10).Info("listed clusters:", cllist.Items)
+	klog.V(3).Info("listed clusters:", cllist.Items)
 
 	for _, cl := range cllist.Items {
 		clmap[cl.Name] = cl.DeepCopy()
@@ -104,7 +104,7 @@ func InstanceDeepCopy(a, b interface{}) error {
 
 // IsReadyACMClusterRegistry check if ACM Cluster API service is ready or not.
 func IsReadyACMClusterRegistry(clReader client.Reader) bool {
-	cllist := &clusterv1alpha1.ClusterList{}
+	cllist := &spokeClusterV1.ManagedClusterList{}
 
 	listopts := &client.ListOptions{}
 

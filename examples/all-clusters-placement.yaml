@@ -1,8 +1,10 @@
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-  name: allclusters
+  name: all-ready-clusters
   namespace: default
 spec:
   clusterSelector: {}
-
+  clusterConditions:
+    - type: SpokeClusterConditionAvailable
+      status: "True"

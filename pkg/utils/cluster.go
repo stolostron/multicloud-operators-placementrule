@@ -17,10 +17,10 @@ package utils
 import (
 	"reflect"
 
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -28,14 +28,14 @@ import (
 // ClusterPredicateFunc defines predicate function for cluster related watch, main purpose is to ignore heartbeat without change
 var ClusterPredicateFunc = predicate.Funcs{
 	UpdateFunc: func(e event.UpdateEvent) bool {
-		oldcl := e.ObjectOld.(*clusterv1alpha1.Cluster)
-		newcl := e.ObjectNew.(*clusterv1alpha1.Cluster)
+		oldcl := e.ObjectOld.(*spokeClusterV1.ManagedCluster)
+		newcl := e.ObjectNew.(*spokeClusterV1.ManagedCluster)
 
 		if !reflect.DeepEqual(oldcl.Labels, newcl.Labels) {
 			return true
 		}
 
-		oldcondMap := make(map[clusterv1alpha1.ClusterConditionType]corev1.ConditionStatus)
+		oldcondMap := make(map[string]metav1.ConditionStatus)
 		for _, cond := range oldcl.Status.Conditions {
 			oldcondMap[cond.Type] = cond.Status
 		}
@@ -51,7 +51,7 @@ var ClusterPredicateFunc = predicate.Funcs{
 			return true
 		}
 
-		klog.V(10).Info("Out Cluster Predicate Func ", oldcl.Name, " with false possitive")
+		klog.V(1).Info("Out Cluster Predicate Func ", oldcl.Name, " with false possitive")
 		return false
 	},
 }

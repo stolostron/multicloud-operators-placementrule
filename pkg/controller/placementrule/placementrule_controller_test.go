@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"github.com/onsi/gomega"
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	"golang.org/x/net/context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -46,10 +46,9 @@ var expectedRequest = reconcile.Request{NamespacedName: prulekey}
 const timeout = time.Second * 5
 
 var (
-	clusteralpha = &clusterv1alpha1.Cluster{
+	clusteralpha = &spokeClusterV1.ManagedCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "clusteralpha",
-			Namespace: prulens,
+			Name: "clusteralpha",
 			Labels: map[string]string{
 				"name": "clusteralpha",
 				"key1": "value1",
@@ -57,10 +56,9 @@ var (
 			},
 		},
 	}
-	clusterbeta = &clusterv1alpha1.Cluster{
+	clusterbeta = &spokeClusterV1.ManagedCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "clusterbeta",
-			Namespace: prulens,
+			Name: "clusterbeta",
 			Labels: map[string]string{
 				"name": "clusterbeta",
 				"key1": "value2",
@@ -69,7 +67,7 @@ var (
 		},
 	}
 
-	clusters = []*clusterv1alpha1.Cluster{clusteralpha, clusterbeta}
+	clusters = []*spokeClusterV1.ManagedCluster{clusteralpha, clusterbeta}
 )
 
 func TestReconcile(t *testing.T) {
