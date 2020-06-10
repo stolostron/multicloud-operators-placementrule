@@ -19,16 +19,16 @@ import (
 	"encoding/base64"
 	"strings"
 
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	appv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	rbacv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 )
 
-func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*clusterv1alpha1.Cluster) error {
+func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*spokeClusterV1.ManagedCluster) error {
 	objmeta, err := meta.Accessor(object)
 	if err != nil {
 		return nil
@@ -43,7 +43,7 @@ func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Obj
 		return nil
 	}
 
-	var clusters []*clusterv1alpha1.Cluster
+	var clusters []*spokeClusterV1.ManagedCluster
 
 	for _, cl := range clmap {
 		clusters = append(clusters, cl.DeepCopy())
@@ -68,10 +68,10 @@ func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Obj
 // filterClusterByUserIdentity filters cluster by checking if user can act on on resources
 func filterClusterByUserIdentity(
 	obj runtime.Object,
-	clusters []*clusterv1alpha1.Cluster,
+	clusters []*spokeClusterV1.ManagedCluster,
 	kubeclient kubernetes.Interface,
 	resource, verb string,
-) []*clusterv1alpha1.Cluster {
+) []*spokeClusterV1.ManagedCluster {
 	if kubeclient == nil {
 		return clusters
 	}
@@ -86,7 +86,7 @@ func filterClusterByUserIdentity(
 		return clusters
 	}
 
-	filteredClusters := []*clusterv1alpha1.Cluster{}
+	filteredClusters := []*spokeClusterV1.ManagedCluster{}
 
 	for _, cluster := range clusters {
 		user, groups := extractUserAndGroup(annotations)

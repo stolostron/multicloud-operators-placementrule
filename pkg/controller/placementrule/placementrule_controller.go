@@ -17,6 +17,7 @@ package placementrule
 import (
 	"context"
 
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
@@ -24,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,7 +70,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	if utils.IsReadyACMClusterRegistry(mgr.GetAPIReader()) {
 		err = c.Watch(
-			&source.Kind{Type: &clusterv1alpha1.Cluster{}},
+			&source.Kind{Type: &spokeClusterV1.ManagedCluster{}},
 			&handler.EnqueueRequestsFromMapFunc{ToRequests: &ClusterPlacementRuleMapper{mgr.GetClient()}},
 			utils.ClusterPredicateFunc,
 		)

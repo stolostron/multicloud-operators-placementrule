@@ -17,13 +17,13 @@ package placementrule
 import (
 	"k8s.io/klog"
 
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"sort"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	clusterv1alpha1 "k8s.io/cluster-registry/pkg/apis/clusterregistry/v1alpha1"
 )
 
 func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRule) error {
@@ -62,7 +62,7 @@ func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRul
 	return nil
 }
 
-func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.PlacementRule, clmap map[string]*clusterv1alpha1.Cluster) error {
+func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.PlacementRule, clmap map[string]*spokeClusterV1.ManagedCluster) error {
 	if instance == nil || instance.Spec.ClusterConditions == nil || clmap == nil {
 		return nil
 	}
@@ -74,7 +74,7 @@ func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.Pla
 			condMatched := false
 
 			for _, clcond := range cl.Status.Conditions {
-				if cond.Type == clcond.Type {
+				if cond.Type == clcond.Type && cond.Status == clcond.Status {
 					condMatched = true
 					break
 				}
@@ -135,7 +135,7 @@ func (ci clusterIndex) Swap(x, y int) {
 }
 
 func (r *ReconcilePlacementRule) sortClustersByResourceHint(instance *appv1alpha1.PlacementRule,
-	clmap map[string]*clusterv1alpha1.Cluster) *clusterIndex {
+	clmap map[string]*spokeClusterV1.ManagedCluster) *clusterIndex {
 	sortedcls := &clusterIndex{}
 
 	if instance == nil || clmap == nil || instance.Spec.ResourceHint == nil {
@@ -150,7 +150,7 @@ func (r *ReconcilePlacementRule) sortClustersByResourceHint(instance *appv1alpha
 	for _, cl := range clmap {
 		newcli := clusterInfo{
 			Name:      cl.Name,
-			Namespace: cl.Namespace,
+			Namespace: cl.Name,
 		}
 
 		sortedcls.Clusters = append(sortedcls.Clusters, newcli)
@@ -162,7 +162,7 @@ func (r *ReconcilePlacementRule) sortClustersByResourceHint(instance *appv1alpha
 }
 
 func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.PlacementRule,
-	clmap map[string]*clusterv1alpha1.Cluster, clidx *clusterIndex) []appv1alpha1.PlacementDecision {
+	clmap map[string]*spokeClusterV1.ManagedCluster, clidx *clusterIndex) []appv1alpha1.PlacementDecision {
 	newpd := []appv1alpha1.PlacementDecision{}
 	total := len(clmap)
 
@@ -181,7 +181,12 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			}
 
 			if picked < total {
-				newpd = append(newpd, *cli.DeepCopy())
+				pd := appv1alpha1.PlacementDecision{
+					ClusterName:      cli.ClusterName,
+					ClusterNamespace: cli.ClusterName,
+				}
+				newpd = append(newpd, pd)
+
 				delete(clmap, cli.ClusterName)
 				picked++
 			} else {
@@ -193,7 +198,7 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			if picked < total {
 				pd := appv1alpha1.PlacementDecision{
 					ClusterName:      cl.Name,
-					ClusterNamespace: cl.Namespace,
+					ClusterNamespace: cl.Name,
 				}
 				newpd = append(newpd, pd)
 				picked++
@@ -210,7 +215,7 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 			if picked < total {
 				pd := appv1alpha1.PlacementDecision{
 					ClusterName:      cli.Name,
-					ClusterNamespace: cli.Namespace,
+					ClusterNamespace: cli.Name,
 				}
 				newpd = append(newpd, pd)
 				picked++
@@ -220,13 +225,13 @@ func (r *ReconcilePlacementRule) pickClustersByReplicas(instance *appv1alpha1.Pl
 		}
 	}
 
-	klog.V(10).Info("New decisions for ", instance.Name, ": ", newpd)
+	klog.V(1).Info("New decisions for ", instance.Name, ": ", newpd)
 
 	return newpd
 }
 
 func (r *ReconcilePlacementRule) filteClustersByPolicies(instance *appv1alpha1.PlacementRule,
-	clmap map[string]*clusterv1alpha1.Cluster /* , clstatusmap map[string]*mcmv1alpha1.ClusterStatus */) error {
+	clmap map[string]*spokeClusterV1.ManagedCluster /* , clstatusmap map[string]*mcmv1alpha1.ClusterStatus */) error {
 	if instance == nil || instance.Spec.Policies == nil || clmap == nil {
 		return nil
 	}
@@ -235,7 +240,7 @@ func (r *ReconcilePlacementRule) filteClustersByPolicies(instance *appv1alpha1.P
 }
 
 func (r *ReconcilePlacementRule) filteClustersByUser(instance *appv1alpha1.PlacementRule,
-	clmap map[string]*clusterv1alpha1.Cluster) error {
+	clmap map[string]*spokeClusterV1.ManagedCluster) error {
 	if instance == nil || clmap == nil {
 		return nil
 	}
