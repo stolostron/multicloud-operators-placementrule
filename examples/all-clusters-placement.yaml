@@ -6,5 +6,5 @@ metadata:
 spec:
   clusterSelector: {}
   clusterConditions:
-    - type: SpokeClusterConditionAvailable
+    - type: ManagedClusterConditionAvailable
       status: "True"
