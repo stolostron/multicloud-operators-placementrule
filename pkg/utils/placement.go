@@ -86,6 +86,11 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 	klog.V(3).Info("listed clusters:", cllist.Items)
 
 	for _, cl := range cllist.Items {
+		// the cluster will not be returned if it is in terminating process
+		if cl.DeletionTimestamp != nil && !cl.DeletionTimestamp.IsZero() {
+			continue
+		}
+
 		clmap[cl.Name] = cl.DeepCopy()
 	}
 
