@@ -26,6 +26,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 )
 
 func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*spokeClusterV1.ManagedCluster) error {
@@ -103,6 +104,7 @@ func filterClusterByUserIdentity(
 			},
 		}
 		result, err := kubeclient.AuthorizationV1().SubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
+		klog.V(1).Infof("user: %v, groups: %v, namespace:%v, result:%v, err:%v", user, groups, cluster.Namespace, result, err)
 
 		if err != nil {
 			continue
