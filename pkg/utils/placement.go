@@ -91,6 +91,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 			continue
 		}
 
+		cl.Namespace = cl.Name
 		clmap[cl.Name] = cl.DeepCopy()
 	}
 

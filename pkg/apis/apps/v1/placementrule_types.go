@@ -26,10 +26,10 @@ const (
 	SchedulerNameMCM = "mcm"
 
 	// UserIdentityAnnotation is user identity annotation
-	UserIdentityAnnotation = "mcm.ibm.com/user-identity"
+	UserIdentityAnnotation = "open-cluster-management.io/user-identity"
 
 	// UserGroupAnnotation is user group annotation
-	UserGroupAnnotation = "mcm.ibm.com/user-group"
+	UserGroupAnnotation = "open-cluster-management.io/user-group"
 )
 
 // +k8s:deepcopy-gen:nonpointer-interfaces=true
