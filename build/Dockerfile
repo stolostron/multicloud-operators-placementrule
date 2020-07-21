@@ -13,6 +13,6 @@ COPY build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
 COPY build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
 
-USER ${USER_UID}
+USER ${USER_ID}
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
