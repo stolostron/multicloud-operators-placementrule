@@ -15,69 +15,37 @@
 package exec
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"runtime"
-
-	"k8s.io/client-go/rest"
-
-	"github.com/prometheus/common/log"
 
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
-	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
-	"github.com/operator-framework/operator-sdk/pkg/leader"
-	"github.com/operator-framework/operator-sdk/pkg/metrics"
-	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	"k8s.io/klog"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Change below variables to serve metrics on different host or port.
 var (
-	metricsHost               = "0.0.0.0"
-	metricsPort         int32 = 8383
-	operatorMetricsPort int32 = 8686
+	metricsHost             = "0.0.0.0"
+	metricsPort         int = 8383
+	operatorMetricsPort int = 8686
 )
-
-func printVersion() {
-	klog.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
-	klog.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
-	klog.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
-}
 
 // RunManager starts the actual manager
 func RunManager() {
-	printVersion()
-
-	// Get a config to talk to the apiserver
-	cfg, err := config.GetConfig()
-	if err != nil {
-		klog.Error(err, "")
-		os.Exit(1)
-	}
-
-	ctx := context.TODO()
-	// Become the leader before proceeding
-	err = leader.Become(ctx, "multicloud-operators-placementrule-lock")
-	if err != nil {
-		klog.Error(err, "")
-		os.Exit(1)
-	}
-
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{
-		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		Port:                    operatorMetricsPort,
+		LeaderElection:          true,
+		LeaderElectionID:        "multicloud-operators-placementrule-leader.open-cluster-management.io",
+		LeaderElectionNamespace: "kube-system",
 	})
+
 	if err != nil {
 		klog.Error(err, "")
 		os.Exit(1)
@@ -97,45 +65,6 @@ func RunManager() {
 		os.Exit(1)
 	}
 
-	if err = serveCRMetrics(cfg); err != nil {
-		klog.Info("Could not generate and serve custom resource metrics", "error", err.Error())
-	}
-
-	// Add to the below struct any other metrics ports you want to expose.
-	servicePorts := []v1.ServicePort{
-		{
-			Port:       metricsPort,
-			Name:       metrics.OperatorPortName,
-			Protocol:   v1.ProtocolTCP,
-			TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: metricsPort},
-		},
-		{
-			Port:       operatorMetricsPort,
-			Name:       metrics.CRPortName,
-			Protocol:   v1.ProtocolTCP,
-			TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: operatorMetricsPort},
-		},
-	}
-	// Create Service object to expose the metrics port(s).
-	service, err := metrics.CreateMetricsService(ctx, cfg, servicePorts)
-	if err != nil {
-		klog.Info("Could not create metrics Service", "error", err.Error())
-	}
-
-	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
-	// necessary to configure Prometheus to scrape metrics from this operator.
-	services := []*v1.Service{service}
-	_, err = metrics.CreateServiceMonitors(cfg, "", services)
-
-	if err != nil {
-		log.Info("Could not create ServiceMonitor object", "error", err.Error())
-		// If this operator is deployed to a cluster without the prometheus-operator running, it will return
-		// ErrServiceMonitorNotPresent, which can be used to safely skip ServiceMonitor creation.
-		if err == metrics.ErrServiceMonitorNotPresent {
-			klog.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects", "error", err.Error())
-		}
-	}
-
 	sig := signals.SetupSignalHandler()
 
 	klog.Info("Detecting ACM cluster API service...")
@@ -148,24 +77,4 @@ func RunManager() {
 		klog.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
-}
-
-// serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
-// It serves those metrics on "http://metricsHost:operatorMetricsPort".
-func serveCRMetrics(cfg *rest.Config) error {
-	// Below function returns filtered operator/CustomResource specific GVKs.
-	// For more control override the below GVK list with your own custom logic.
-	filteredGVK, err := k8sutil.GetGVKsFromAddToScheme(apis.AddToScheme)
-	if err != nil {
-		return err
-	}
-	// Get the namespace the operator is currently deployed in.
-	operatorNs, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		return err
-	}
-	// To generate metrics in other namespaces, add the values below.
-	ns := []string{operatorNs}
-	// Generate and serve custom resource specific metrics.
-	return kubemetrics.GenerateAndServeCRMetrics(cfg, ns, filteredGVK, metricsHost, operatorMetricsPort)
 }
