@@ -22,10 +22,10 @@ import (
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
-	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
-
+	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -37,11 +37,19 @@ var (
 
 // RunManager starts the actual manager
 func RunManager() {
+	enableLeaderElection := false
+	if _, err := rest.InClusterConfig(); err == nil {
+		klog.Info("LeaderElection enabled as running in a cluster")
+		enableLeaderElection = true
+	} else {
+		klog.Info("LeaderElection disabled as not running in a cluster")
+	}
+
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		Port:                    operatorMetricsPort,
-		LeaderElection:          true,
+		LeaderElection:          enableLeaderElection,
 		LeaderElectionID:        "multicloud-operators-placementrule-leader.open-cluster-management.io",
 		LeaderElectionNamespace: "kube-system",
 	})
