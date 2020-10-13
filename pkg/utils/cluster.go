@@ -31,6 +31,11 @@ var ClusterPredicateFunc = predicate.Funcs{
 		oldcl := e.ObjectOld.(*spokeClusterV1.ManagedCluster)
 		newcl := e.ObjectNew.(*spokeClusterV1.ManagedCluster)
 
+		//if managed cluster is being deleted
+		if !reflect.DeepEqual(oldcl.DeletionTimestamp, newcl.DeletionTimestamp) {
+			return true
+		}
+
 		if !reflect.DeepEqual(oldcl.Labels, newcl.Labels) {
 			return true
 		}
