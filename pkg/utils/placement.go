@@ -72,7 +72,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 		return nil, err
 	}
 
-	klog.V(10).Info("Using Cluster LabelSelector ", clSelector)
+	klog.V(1).Info("Using Cluster LabelSelector ", clSelector)
 
 	cllist := &spokeClusterV1.ManagedClusterList{}
 
@@ -83,7 +83,7 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 		return nil, err
 	}
 
-	klog.V(3).Info("listed clusters:", cllist.Items)
+	klog.V(2).Infof("listed clusters count: %v, items: %v ", len(cllist.Items), cllist.Items)
 
 	for _, cl := range cllist.Items {
 		// the cluster will not be returned if it is in terminating process
