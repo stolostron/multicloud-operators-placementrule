@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: multicloud-operators-placementrule
+  name: multicluster-operators-placementrule
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: multicloud-operators-placementrule
+      name: multicluster-operators-placementrule
   template:
     metadata:
       labels:
-        name: multicloud-operators-placementrule
+        name: multicluster-operators-placementrule
     spec:
-      serviceAccountName: multicloud-operators-placementrule
+      serviceAccountName: multicluster-operators-placementrule
       containers:
-        - name: multicloud-operators-placementrule
+        - name: multicluster-operators-placementrule
           # Replace this with the built image name
           image: REPLACE_IMAGE
           command:
-          - multicloud-operators-placementrule
+          - multicluster-operators-placementrule
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -30,4 +30,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "multicloud-operators-placementrule"
+              value: "multicluster-operators-placementrule"
