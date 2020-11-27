@@ -12,49 +12,33 @@
 
 - [multicloud-operators-placementrule](#multicloud-operators-placementrule)
     - [What is the multicloud-operators-placementrule](#what-is-the-multicloud-operators-placementrule)
-    - [Community, discussion, contribution, and support](#community-discussion-contribution-and-support)
     - [Getting Started](#getting-started)
-        - [Prerequisites](#prerequisites)
-        - [Deployment](#deployment)
-    - [Security Response](#security-response)
     - [References](#references)
-        - [multicloud-operators repositories](#multicloud-operators-repositories)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Placement Rules for Multicloud Applications.
+## What is the multicloud-operators-placementrule?
 
-## What is the multicloud-operators-placementrule
+The `multicloud-operators-placementrule` is the operator that evaluates the target managed clusters that the subscription should deploy to.
 
-PlacementRule operator evaluate the target managed clusters that the subscription should deploy to.
+Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
-## Community, discussion, contribution, and support
+## Getting started
 
-Check the [CONTRIBUTING Doc](CONTRIBUTING.md) for how to contribute to the repo.
+- Clone and build an image with the [Development guide](docs/development.md).
 
-------
+- View the [Deployment guide](docs/deployment.md) to learn how to deploy the operator.
 
-## Getting Started
-
-### Prerequisites
-
-Check the [Development Doc](docs/development.md) for how to contribute to the repo.
-
-### Deployment
-
-Check the [Deployment Doc](docs/deployment.md) for how to deploy the operator.
-
-## Security Response
-
-Check the [Security Doc](SECURITY.md) if you've found a security issue.
+- Check the [Security guide](SECURITY.md) if you need to report a security issue.
 
 ## References
 
-### multicloud-operators repositories
+- Access the following multicloud-operators repositories:
 
-- [multicloud-operators-application](https://github.com/open-cluster-management/multicloud-operators-application)
-- [multicloud-operators-channel](https://github.com/open-cluster-management/multicloud-operators-channel)
-- [multicloud-operators-deployable](https://github.com/open-cluster-management/multicloud-operators-deployable)
-- [multicloud-operators-placementrule](https://github.com/open-cluster-management/multicloud-operators-placementrule)
-- [multicloud-operators-subscription](https://github.com/open-cluster-management/multicloud-operators-subscription)
-- [multicloud-operators-subscription-release](https://github.com/open-cluster-management/multicloud-operators-subscription-release)
+    - [multicloud-operators-application](https://github.com/open-cluster-management/multicloud-operators-application)
+    - [multicloud-operators-channel](https://github.com/open-cluster-management/multicloud-operators-channel)
+    - [multicloud-operators-deployable](https://github.com/open-cluster-management/multicloud-operators-deployable)
+    - [multicloud-operators-placementrule](https://github.com/open-cluster-management/multicloud-operators-placementrule)
+    - [multicloud-operators-subscription](https://github.com/open-cluster-management/multicloud-operators-subscription)
+    - [multicloud-operators-subscription-release](https://github.com/open-cluster-management/multicloud-operators-subscription-release)
+    
