@@ -63,7 +63,7 @@ GITHUB_TOKEN ?=
 
 ifdef GITHUB_TOKEN
 	GOPRIVATE := github.com/open-cluster-management
-	git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+	$(shell git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/")
 endif
 
 USE_VENDORIZED_BUILD_HARNESS ?=
