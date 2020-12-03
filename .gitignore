@@ -79,6 +79,8 @@ tags
 .build-harness
 .build-harness-bootstrap
 OPENSOURCE.check
+build-harness-extensions
+build-harness
 
 # override build harness vendoring
 !vbh/.build-harness-vendorized

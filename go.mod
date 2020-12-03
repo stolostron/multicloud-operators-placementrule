@@ -8,13 +8,16 @@ require (
 	github.com/go-openapi/spec v0.19.4
 	github.com/onsi/gomega v1.10.1
 	github.com/open-cluster-management/api v0.0.0-20201007180356-41d07eee4294
+	github.com/open-cluster-management/endpoint-operator v1.0.1-2020-05-28-18-29-00.0.20201123150704-b95ad181d88a
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3
-	k8s.io/client-go v0.19.3
+	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 	sigs.k8s.io/controller-runtime v0.6.3
 )
+
+replace k8s.io/client-go => k8s.io/client-go v0.19.3
