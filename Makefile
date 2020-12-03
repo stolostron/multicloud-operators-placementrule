@@ -61,6 +61,11 @@ endif
 GITHUB_USER := $(shell echo $(GITHUB_USER) | sed 's/@/%40/g')
 GITHUB_TOKEN ?=
 
+ifdef GITHUB_TOKEN
+	GOPRIVATE := github.com/open-cluster-management
+	git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+endif
+
 USE_VENDORIZED_BUILD_HARNESS ?=
 
 ifndef USE_VENDORIZED_BUILD_HARNESS
