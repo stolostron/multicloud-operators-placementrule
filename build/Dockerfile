@@ -10,9 +10,10 @@ ENV OPERATOR=/usr/local/bin/multicluster-operators-placementrule \
 # install operator binary
 COPY build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
 
+# install argocdcluster controller binary
+COPY build/_output/bin/argocdcluster /usr/local/bin/argocdcluster
+
 COPY build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
-
-ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
 USER ${USER_UID}
