@@ -18,9 +18,11 @@ import (
 	"fmt"
 	"os"
 
+	endpointapis "github.com/open-cluster-management/endpoint-operator/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
@@ -31,8 +33,8 @@ import (
 // Change below variables to serve metrics on different host or port.
 var (
 	metricsHost             = "0.0.0.0"
-	metricsPort         int = 8383
-	operatorMetricsPort int = 8686
+	metricsPort         int = 8388
+	operatorMetricsPort int = 8688
 )
 
 // RunManager starts the actual manager
@@ -52,7 +54,7 @@ func RunManager() {
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		Port:                    operatorMetricsPort,
 		LeaderElection:          enableLeaderElection,
-		LeaderElectionID:        "multicloud-operators-placementrule-leader.open-cluster-management.io",
+		LeaderElectionID:        "multicloud-operators-argocdcluster-leader.open-cluster-management.io",
 		LeaderElectionNamespace: "kube-system",
 	})
 
@@ -60,8 +62,6 @@ func RunManager() {
 		klog.Error(err, "")
 		os.Exit(1)
 	}
-
-	klog.Infof("server endpoint: %v", mgr.GetConfig().Host)
 
 	klog.Info("Registering Components.")
 
@@ -71,8 +71,18 @@ func RunManager() {
 		os.Exit(1)
 	}
 
+	if err := v1.AddToScheme(mgr.GetScheme()); err != nil {
+		klog.Error(err, "")
+		os.Exit(1)
+	}
+
+	if err := endpointapis.AddToScheme(mgr.GetScheme()); err != nil {
+		klog.Error(err, "")
+		os.Exit(1)
+	}
+
 	// Setup all Controllers
-	if err := controller.AddToManager(mgr); err != nil {
+	if err := controller.AddArgocdClusterToManager(mgr); err != nil {
 		klog.Error(err, "")
 		os.Exit(1)
 	}

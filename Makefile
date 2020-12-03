@@ -110,7 +110,7 @@ lint: lint-all
 ############################################################
 
 test:
-	@go test ${TESTARGS} ./...
+	go test -coverprofile=coverage.out ./...
 
 ############################################################
 # coverage section
@@ -128,6 +128,7 @@ build:
 
 local:
 	@GOOS=darwin common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
+	@GOOS=darwin common/scripts/gobuild.sh build/_output/bin/argocdcluster ./cmd/argocdcluster
 
 ############################################################
 # images section
