@@ -29,7 +29,9 @@ import (
 )
 
 const (
-	ACMClusterSecretLabel    = "apps.open-cluster-management.io/secret-type"
+	// #nosec G101
+	ACMClusterSecretLabel = "apps.open-cluster-management.io/secret-type"
+	// #nosec G101
 	ArgocdClusterSecretLabel = "apps.open-cluster-management.io/acm-cluster"
 )
 

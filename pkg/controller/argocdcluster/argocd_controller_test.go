@@ -238,7 +238,7 @@ func TestReconcile(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(argocdServerExpectedRequest)))
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	argocdSecretlist = &corev1.SecretList{}
 	err = c.List(context.TODO(), argocdSecretlist, listopts)
@@ -257,7 +257,7 @@ func TestReconcile(t *testing.T) {
 	defer c.Delete(context.TODO(), newArgocdServerPod)
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(newArgocdServerExpectedRequest)))
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	argocdSecretlist = &corev1.SecretList{}
 	newListopts := listopts
