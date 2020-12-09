@@ -148,40 +148,40 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for ACM cluster secret changes
-	err = c.Watch(
-		&source.Kind{Type: &v1.Secret{}}, &handler.EnqueueRequestForObject{}, utils.AcmClusterSecretPredicateFunc,
-	)
-	if err != nil {
-		return err
-	}
-
-	// Watch for ArgoCD cluster secret changes
-	err = c.Watch(
-		&source.Kind{Type: &v1.Secret{}},
-		&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdSecretRuleMapper{mgr.GetClient()}},
-		utils.ArgocdClusterSecretPredicateFunc)
-	if err != nil {
-		return err
-	}
-
-	// Watch for KlusterletAddonConfig argocdCluster setting changes
 	if utils.IsReadyACMClusterRegistry(mgr.GetAPIReader()) {
+		// Watch for ACM cluster secret changes
+		err = c.Watch(
+			&source.Kind{Type: &v1.Secret{}}, &handler.EnqueueRequestForObject{}, utils.AcmClusterSecretPredicateFunc,
+		)
+		if err != nil {
+			return err
+		}
+
+		// Watch for ArgoCD cluster secret changes
+		err = c.Watch(
+			&source.Kind{Type: &v1.Secret{}},
+			&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdSecretRuleMapper{mgr.GetClient()}},
+			utils.ArgocdClusterSecretPredicateFunc)
+		if err != nil {
+			return err
+		}
+
+		// Watch for KlusterletAddonConfig argocdCluster setting changes
 		err = c.Watch(
 			&source.Kind{Type: &agentv1.KlusterletAddonConfig{}},
 			&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdAddonConfigRuleMapper{mgr.GetClient()}})
 		if err != nil {
 			return err
 		}
-	}
 
-	// Watch for argocd server changes
-	err = c.Watch(
-		&source.Kind{Type: &v1.Pod{}},
-		&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdServerRuleMapper{mgr.GetClient()}},
-		utils.ArgocdServerPredicateFunc)
-	if err != nil {
-		return err
+		// Watch for argocd server changes
+		err = c.Watch(
+			&source.Kind{Type: &v1.Pod{}},
+			&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdServerRuleMapper{mgr.GetClient()}},
+			utils.ArgocdServerPredicateFunc)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
