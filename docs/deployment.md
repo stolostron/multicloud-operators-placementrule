@@ -12,9 +12,7 @@
 
 ## RBAC
 
-The service account is `multicluster-operators-placementrule`.
-
-The role `multicluster-operators-placementrule` is binded to that service account.
+The service account is `multicluster-operators-placementrule`. The role `multicluster-operators-placementrule` is binded to that service account.
 
 ### Deployment
 
@@ -26,7 +24,7 @@ kubectl apply -f deploy
 
 ## General process
 
-Placementrule CR:
+See the following Placementrule CR sample:
 
 ```yaml
 apiVersion: apps.open-cluster-management.io/v1
