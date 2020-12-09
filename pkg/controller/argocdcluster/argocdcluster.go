@@ -162,6 +162,7 @@ func (r *ReconcileSecret) DeleteAllArgocdClusterSecrets() error {
 	for _, sl := range ArgoCDSecretList.Items {
 		curSecret := sl.DeepCopy()
 		err := r.Delete(context.TODO(), curSecret)
+
 		if err != nil {
 			klog.Errorf("Error in deleting existing argocd cluster secret. ArgoCD server namespace: %v, key: %v/%v, err: %v",
 				ArgocdServerNamespace, sl.Namespace, sl.Name, err)

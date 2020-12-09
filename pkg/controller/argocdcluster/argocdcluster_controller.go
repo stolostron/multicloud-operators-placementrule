@@ -166,11 +166,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for KlusterletAddonConfig argocdCluster setting changes
-	err = c.Watch(
-		&source.Kind{Type: &agentv1.KlusterletAddonConfig{}},
-		&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdAddonConfigRuleMapper{mgr.GetClient()}})
-	if err != nil {
-		return err
+	if utils.IsReadyACMClusterRegistry(mgr.GetAPIReader()) {
+		err = c.Watch(
+			&source.Kind{Type: &agentv1.KlusterletAddonConfig{}},
+			&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdAddonConfigRuleMapper{mgr.GetClient()}})
+		if err != nil {
+			return err
+		}
 	}
 
 	// Watch for argocd server changes
