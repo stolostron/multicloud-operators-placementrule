@@ -1,4 +1,4 @@
-# multicloud-operators-placementrule
+# Multicloud-operators-placementrule
 
 [![Build](https://api.travis-ci.com/open-cluster-management/multicloud-operators-placementrule.svg?branch=master)](https://api.travis-ci.com/open-cluster-management/multicloud-operators-placementrule.svg?branch=master)
 [![GoDoc](https://godoc.org/github.com/open-cluster-management/multicloud-operators-placementrule?status.svg)](https://godoc.org/github.com/open-cluster-management/multicloud-operators-placementrule)
@@ -11,12 +11,12 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [multicloud-operators-placementrule](#multicloud-operators-placementrule)
-    - [What is the multicloud-operators-placementrule](#what-is-the-multicloud-operators-placementrule)
+    - [What is the multicloud-operators-placementrule?](#what-is-the-multicloud-operators-placementrule)
     - [Community, discussion, contribution, and support](#community-discussion-contribution-and-support)
-    - [Getting Started](#getting-started)
+    - [Getting started](#getting-started)
         - [Prerequisites](#prerequisites)
         - [Deployment](#deployment)
-    - [Security Response](#security-response)
+    - [Security response](#security-response)
     - [References](#references)
         - [multicloud-operators repositories](#multicloud-operators-repositories)
 
@@ -24,21 +24,21 @@
 
 Placement Rules for Multicloud Applications.
 
-## What is the multicloud-operators-placementrule
+## What is the multicloud-operators-placementrule?
 
-PlacementRule operator evaluate the target managed clusters that the subscription should deploy to.
+The PlacementRule operator determines which target managed clusters the subscription should deploy to.
 
 ## Community, discussion, contribution, and support
 
-Check the [CONTRIBUTING Doc](CONTRIBUTING.md) for how to contribute to the repo.
+Check the [CONTRIBUTING Doc](CONTRIBUTING.md) for how to contribute to the repository.
 
 ------
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-Check the [Development Doc](docs/development.md) for how to contribute to the repo.
+Check the [Development Doc](docs/development.md) for how to contribute to the repository.
 
 ### Deployment
 
@@ -46,11 +46,11 @@ Check the [Deployment Doc](docs/deployment.md) for how to deploy the operator.
 
 ## Security Response
 
-Check the [Security Doc](SECURITY.md) if you've found a security issue.
+Check the [Security Doc](SECURITY.md) if you find a security issue.
 
 ## References
 
-### multicloud-operators repositories
+### Multicloud-operators repositories
 
 - [multicloud-operators-application](https://github.com/open-cluster-management/multicloud-operators-application)
 - [multicloud-operators-channel](https://github.com/open-cluster-management/multicloud-operators-channel)
