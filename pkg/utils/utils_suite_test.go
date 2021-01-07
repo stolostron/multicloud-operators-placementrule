@@ -18,13 +18,17 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
+	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 )
 
@@ -33,14 +37,16 @@ var c client.Client
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "deploy", "crds")},
+		CRDDirectoryPaths: []string{
+			filepath.Join("..", "..", "deploy", "crds"),
+			filepath.Join("..", "..", "hack", "test", "crds"),
+		},
 	}
 
-	err := apis.AddToScheme(scheme.Scheme)
-	if err != nil {
-		log.Fatal(err)
-	}
+	apis.AddToScheme(scheme.Scheme)
+	spokeClusterV1.AddToScheme(scheme.Scheme)
 
+	var err error
 	if cfg, err = t.Start(); err != nil {
 		log.Fatal(err)
 	}
@@ -53,4 +59,18 @@ func TestMain(m *testing.M) {
 
 	t.Stop()
 	os.Exit(code)
+}
+
+// StartTestManager adds recFn
+func StartTestManager(mgr manager.Manager, g *gomega.GomegaWithT) (chan struct{}, *sync.WaitGroup) {
+	stop := make(chan struct{})
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		g.Expect(mgr.Start(stop)).NotTo(gomega.HaveOccurred())
+	}()
+
+	return stop, wg
 }

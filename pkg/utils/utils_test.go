@@ -19,11 +19,65 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
+	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
+)
+
+var (
+	cluster1 = &spokeClusterV1.ManagedCluster{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ManagedCluster",
+			APIVersion: "cluster.open-cluster-management.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cluster1",
+			Labels: map[string]string{
+				"name": "cluster1",
+				"key1": "c1v1",
+				"key2": "c1v2",
+			},
+		},
+	}
+	cluster2 = &spokeClusterV1.ManagedCluster{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ManagedCluster",
+			APIVersion: "cluster.open-cluster-management.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cluster2",
+			Labels: map[string]string{
+				"name": "cluster2",
+				"key1": "c2v1",
+				"key2": "c2v2",
+			},
+		},
+	}
+
+	clusters = []*spokeClusterV1.ManagedCluster{cluster1, cluster2}
+
+	cl1 = appv1alpha1.GenericClusterReference{Name: "cluster1"}
+
+	placementrule1 = &appv1alpha1.PlacementRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "placmentrule-1",
+			Namespace: "default",
+			Annotations: map[string]string{
+				"open-cluster-management.io/user-identity": "a3ViZTphZG1pbg==",
+				"open-cluster-management.io/user-group":    "c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk",
+			},
+		},
+		Spec: appv1alpha1.PlacementRuleSpec{
+			GenericPlacementFields: appv1alpha1.GenericPlacementFields{
+				Clusters: []appv1alpha1.GenericClusterReference{cl1},
+			},
+		},
+	}
 )
 
 func TestLocal(t *testing.T) {
@@ -71,4 +125,49 @@ func TestEventRecorder(t *testing.T) {
 	defer c.Delete(context.TODO(), cfgmap)
 
 	rec.RecordEvent(cfgmap, "no reason", "no message", err)
+}
+
+func TestPlacementRule(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
+	// channel when it is finished.
+	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	kubeClient := kubernetes.NewForConfigOrDie(cfg)
+
+	stopMgr, mgrStopped := StartTestManager(mgr, g)
+
+	defer func() {
+		close(stopMgr)
+		mgrStopped.Wait()
+	}()
+
+	for _, cl := range clusters {
+		clinstance := cl.DeepCopy()
+		err = c.Create(context.TODO(), clinstance)
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+
+		defer c.Delete(context.TODO(), clinstance)
+	}
+
+	err = c.Create(context.TODO(), placementrule1)
+	defer c.Delete(context.TODO(), placementrule1)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	// test PlaceByGenericPlacmentFields
+	clmap, err := PlaceByGenericPlacmentFields(c, placementrule1.Spec.GenericPlacementFields, kubeClient, placementrule1)
+
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(len(clmap)).To(gomega.Equal(1))
+
+	// test IsReadyACMClusterRegistry
+	ret := IsReadyACMClusterRegistry(mgr.GetAPIReader())
+	g.Expect(ret).To(gomega.Equal(true))
+
+	// test FilteClustersByIdentity
+	err = FilteClustersByIdentity(kubeClient, placementrule1, clmap)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(len(clmap)).To(gomega.Equal(1))
 }
