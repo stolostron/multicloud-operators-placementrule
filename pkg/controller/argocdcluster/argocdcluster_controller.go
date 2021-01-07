@@ -233,14 +233,13 @@ func (r *ReconcileSecret) Reconcile(request reconcile.Request) (reconcile.Result
 		argocdServerPod := &v1.Pod{}
 		err := r.Get(context.TODO(), argocdServerKey, argocdServerPod)
 
-		if err != nil {
-			if errors.IsNotFound(err) {
-				// no argocd server pod found, batch delete all argocd cluster secrets from the argocd server namespace
-				err = r.DeleteAllArgocdClusterSecrets()
-				klog.Infof("ArgoCD Server not found, Delete all argocd cluster secrets. ArgoCD Namespace: %v, err: %v", ArgocdServerNamespace, err)
+		if (err != nil && errors.IsNotFound(err)) ||
+			(argocdServerPod.DeletionTimestamp != nil && argocdServerPod.DeletionTimestamp.IsZero()) {
+			// no argocd server pod found, batch delete all argocd cluster secrets from the argocd server namespace
+			err = r.DeleteAllArgocdClusterSecrets()
+			klog.Infof("ArgoCD Server not found, Delete all argocd cluster secrets. ArgoCD Namespace: %v, err: %v", ArgocdServerNamespace, err)
 
-				return reconcile.Result{}, err
-			}
+			return reconcile.Result{}, err
 		}
 
 		err = r.SyncArgocdClusterSecrets()
