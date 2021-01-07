@@ -238,12 +238,20 @@ func TestReconcile(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(argocdServerExpectedRequest)))
-	time.Sleep(5 * time.Second)
 
 	argocdSecretlist = &corev1.SecretList{}
-	err = c.List(context.TODO(), argocdSecretlist, listopts)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
 
+	for i := 0; i < 10; i++ {
+		time.Sleep(5 * time.Second)
+
+		err = c.List(context.TODO(), argocdSecretlist, listopts)
+
+		if err == nil && len(argocdSecretlist.Items) == 0 {
+			break
+		}
+	}
+
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(len(argocdSecretlist.Items)).To(gomega.Equal(0))
 
 	// test5: create argocd server pod in the new namespace new-argocd, check its argocd cluster secret is synced to the new namespace
