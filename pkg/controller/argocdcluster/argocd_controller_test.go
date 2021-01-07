@@ -24,6 +24,7 @@ import (
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -237,22 +238,25 @@ func TestReconcile(t *testing.T) {
 	err = c.Delete(context.TODO(), existingArgocdServerPod)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(argocdServerExpectedRequest)))
-
-	argocdSecretlist = &corev1.SecretList{}
+	ArgocdServerPod := &corev1.Pod{}
 
 	for i := 0; i < 10; i++ {
 		time.Sleep(5 * time.Second)
 
-		err = c.List(context.TODO(), argocdSecretlist, listopts)
+		err = c.Get(context.TODO(), argocdServerPodKey, ArgocdServerPod)
 
-		if err == nil && len(argocdSecretlist.Items) == 0 {
+		if err != nil && errors.IsNotFound(err) {
+			// make sure the argocd server pod is gone before checking argocd cluster secrets
+			g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(argocdServerExpectedRequest)))
+
+			argocdSecretlist = &corev1.SecretList{}
+			err = c.List(context.TODO(), argocdSecretlist, listopts)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(len(argocdSecretlist.Items)).To(gomega.Equal(0))
+
 			break
 		}
 	}
-
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(argocdSecretlist.Items)).To(gomega.Equal(0))
 
 	// test5: create argocd server pod in the new namespace new-argocd, check its argocd cluster secret is synced to the new namespace
 	g.Expect(c.Create(context.TODO(), newArgocdServerNamespace)).NotTo(gomega.HaveOccurred())
