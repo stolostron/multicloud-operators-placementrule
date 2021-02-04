@@ -300,12 +300,13 @@ func (r *ReconcileSecret) Reconcile(request reconcile.Request) (reconcile.Result
 // GetArgocdServerNamespace get ArgoCD server namespace.
 // We assume that only one ArgoCD server is running on ACM hub cluster
 func (r *ReconcileSecret) GetArgocdServerNamespace() string {
-	ArgocdServerPodList := &v1.PodList{}
+	ArgocdServerServiceList := &v1.ServiceList{}
 	listopts := &client.ListOptions{}
 
 	ArgocdServerSelector := &metav1.LabelSelector{
 		MatchLabels: map[string]string{
-			"app.kubernetes.io/name": "argocd-server",
+			"app.kubernetes.io/component": "server",
+			"app.kubernetes.io/part-of":   "argocd",
 		},
 	}
 
@@ -316,19 +317,19 @@ func (r *ReconcileSecret) GetArgocdServerNamespace() string {
 	}
 
 	listopts.LabelSelector = ArgocdServerLabel
-	err = r.List(context.TODO(), ArgocdServerPodList, listopts)
+	err = r.List(context.TODO(), ArgocdServerServiceList, listopts)
 
 	if err != nil {
 		klog.Error("Failed to list ArgoCD cluster secrets, err:", err)
 		return ""
 	}
 
-	if len(ArgocdServerPodList.Items) == 0 {
+	if len(ArgocdServerServiceList.Items) == 0 {
 		klog.Error("No ArgoCD server pod found")
 		return ""
 	}
 
-	return ArgocdServerPodList.Items[0].Namespace
+	return ArgocdServerServiceList.Items[0].Namespace
 }
 
 func (r *ReconcileSecret) IfSyncArgocdCluster(clusterName string) bool {
