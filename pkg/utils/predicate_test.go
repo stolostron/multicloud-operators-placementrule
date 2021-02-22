@@ -81,20 +81,22 @@ var (
 		},
 	}
 
-	oldArgocdPod = &v1.Pod{
+	oldArgocdService = &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "argocd-server",
 			Labels: map[string]string{
-				"app.kubernetes.io/name": "non-argocd-server",
+				"app.kubernetes.io/part-of":   "argocd",
+				"app.kubernetes.io/component": "server",
 			},
 		},
 	}
 
-	newArgocdPod = &v1.Pod{
+	newArgocdService = &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "argocd-server",
 			Labels: map[string]string{
-				"app.kubernetes.io/name": "argocd-server",
+				"app.kubernetes.io/part-of":   "argocd",
+				"app.kubernetes.io/component": "server",
 			},
 		},
 	}
@@ -173,25 +175,25 @@ func TestPredicate(t *testing.T) {
 	instance = ArgocdServerPredicateFunc
 
 	createEvt = event.CreateEvent{
-		Object: newArgocdPod,
-		Meta:   newArgocdPod.GetObjectMeta(),
+		Object: newArgocdService,
+		Meta:   newArgocdService.GetObjectMeta(),
 	}
 	ret = instance.Create(createEvt)
 	g.Expect(ret).To(gomega.Equal(true))
 
 	updateEvt = event.UpdateEvent{
-		ObjectOld: oldArgocdPod,
-		MetaOld:   oldArgocdPod.GetObjectMeta(),
-		ObjectNew: newArgocdPod,
-		MetaNew:   newArgocdPod.GetObjectMeta(),
+		ObjectOld: oldArgocdService,
+		MetaOld:   oldArgocdService.GetObjectMeta(),
+		ObjectNew: newArgocdService,
+		MetaNew:   newArgocdService.GetObjectMeta(),
 	}
 
 	ret = instance.Update(updateEvt)
 	g.Expect(ret).To(gomega.Equal(true))
 
 	delEvt = event.DeleteEvent{
-		Object: newArgocdPod,
-		Meta:   newArgocdPod.GetObjectMeta(),
+		Object: newArgocdService,
+		Meta:   newArgocdService.GetObjectMeta(),
 	}
 	ret = instance.Delete(delEvt)
 	g.Expect(ret).To(gomega.Equal(true))

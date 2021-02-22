@@ -176,7 +176,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 		// Watch for argocd server changes
 		err = c.Watch(
-			&source.Kind{Type: &v1.Pod{}},
+			&source.Kind{Type: &v1.Service{}},
 			&handler.EnqueueRequestsFromMapFunc{ToRequests: &argocdServerRuleMapper{mgr.GetClient()}},
 			utils.ArgocdServerPredicateFunc)
 		if err != nil {
@@ -230,12 +230,12 @@ func (r *ReconcileSecret) Reconcile(request reconcile.Request) (reconcile.Result
 
 		argocdServerKey := types.NamespacedName{Name: argocdServerName, Namespace: ArgocdServerNamespace}
 
-		argocdServerPod := &v1.Pod{}
-		err := r.Get(context.TODO(), argocdServerKey, argocdServerPod)
+		argocdServerService := &v1.Service{}
+		err := r.Get(context.TODO(), argocdServerKey, argocdServerService)
 
 		if (err != nil && errors.IsNotFound(err)) ||
-			(argocdServerPod.DeletionTimestamp != nil && argocdServerPod.DeletionTimestamp.IsZero()) {
-			// no argocd server pod found, batch delete all argocd cluster secrets from the argocd server namespace
+			(argocdServerService.DeletionTimestamp != nil && argocdServerService.DeletionTimestamp.IsZero()) {
+			// no argocd server service found, batch delete all argocd cluster secrets from the argocd server namespace
 			err = r.DeleteAllArgocdClusterSecrets()
 			klog.Infof("ArgoCD Server not found, Delete all argocd cluster secrets. ArgoCD Namespace: %v, err: %v", ArgocdServerNamespace, err)
 
@@ -325,7 +325,7 @@ func (r *ReconcileSecret) GetArgocdServerNamespace() string {
 	}
 
 	if len(ArgocdServerServiceList.Items) == 0 {
-		klog.Error("No ArgoCD server pod found")
+		klog.Error("No ArgoCD server service found")
 		return ""
 	}
 
