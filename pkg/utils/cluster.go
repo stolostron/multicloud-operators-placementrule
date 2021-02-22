@@ -184,54 +184,58 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 // ArgocdServerPredicateFunc defines predicate function for cluster related watch
 var ArgocdServerPredicateFunc = predicate.Funcs{
 	UpdateFunc: func(e event.UpdateEvent) bool {
-		oldPod, ok := e.ObjectOld.(*v1.Pod)
+		oldService, ok := e.ObjectOld.(*v1.Service)
 		if !ok {
 			return false
 		}
 
-		newPod, nok := e.ObjectNew.(*v1.Pod)
+		newService, nok := e.ObjectNew.(*v1.Service)
 		if !nok {
 			return false
 		}
 
-		oldArgocdServerLabel, ok := e.MetaOld.GetLabels()["app.kubernetes.io/name"]
-		newArgocdServerLabel, nok := e.MetaNew.GetLabels()["app.kubernetes.io/name"]
+		oldArgocdServerLabel := e.MetaOld.GetLabels()
+		newArgocdServerLabel := e.MetaNew.GetLabels()
 
-		if ok && oldArgocdServerLabel == "argocd-server" {
-			klog.Infof("Update a old ArgoCD Server Pod, old: %v/%v, new: %v/%v", oldPod.Namespace, oldPod.Name, newPod.Namespace, newPod.Name)
+		if oldArgocdServerLabel != nil && oldArgocdServerLabel["app.kubernetes.io/part-of"] == "argocd" &&
+			oldArgocdServerLabel["app.kubernetes.io/component"] == "server" {
+			klog.Infof("Update a old ArgoCD Server Service, old: %v/%v, new: %v/%v", oldService.Namespace, oldService.Name, newService.Namespace, newService.Name)
 			return true
 		}
 
-		if nok && newArgocdServerLabel == "argocd-server" {
-			klog.Infof("Update a new ArgoCD Server Pod, old: %v/%v, new: %v/%v", oldPod.Namespace, oldPod.Name, newPod.Namespace, newPod.Name)
+		if newArgocdServerLabel != nil && newArgocdServerLabel["app.kubernetes.io/part-of"] == "argocd" &&
+			newArgocdServerLabel["app.kubernetes.io/component"] == "server" {
+			klog.Infof("Update a new ArgoCD Server Service, old: %v/%v, new: %v/%v", oldService.Namespace, oldService.Name, newService.Namespace, newService.Name)
 			return true
 		}
 
-		klog.Infof("Not a ArgoCD Server Pod, old: %v/%v, new: %v/%v", oldPod.Namespace, oldPod.Name, newPod.Namespace, newPod.Name)
+		klog.Infof("Not a ArgoCD Server service, old: %v/%v, new: %v/%v", oldService.Namespace, oldService.Name, newService.Namespace, newService.Name)
 		return false
 	},
 	CreateFunc: func(e event.CreateEvent) bool {
-		ArgocdServerLabel, ok := e.Meta.GetLabels()["app.kubernetes.io/name"]
+		ArgocdServerLabel := e.Meta.GetLabels()
 
-		if !ok {
+		if ArgocdServerLabel == nil {
 			return false
-		} else if ArgocdServerLabel != "argocd-server" {
+		} else if ArgocdServerLabel["app.kubernetes.io/part-of"] != "argocd" ||
+			ArgocdServerLabel["app.kubernetes.io/component"] != "server" {
 			return false
 		}
 
-		klog.Infof("Create a ArgoCD Server Pod: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Create a ArgoCD Server Service: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 	DeleteFunc: func(e event.DeleteEvent) bool {
-		ArgocdServerLabel, ok := e.Meta.GetLabels()["app.kubernetes.io/name"]
+		ArgocdServerLabel := e.Meta.GetLabels()
 
-		if !ok {
+		if ArgocdServerLabel == nil {
 			return false
-		} else if ArgocdServerLabel != "argocd-server" {
+		} else if ArgocdServerLabel["app.kubernetes.io/part-of"] != "argocd" ||
+			ArgocdServerLabel["app.kubernetes.io/component"] != "server" {
 			return false
 		}
 
-		klog.Infof("Delete a ArgoCD Server Pod: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Delete a ArgoCD Server Service: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 }
