@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -57,7 +58,7 @@ var (
 		},
 	}
 
-	argocdServerPodKey = types.NamespacedName{
+	argocdServerServiceKey = types.NamespacedName{
 		Name:      "argocd-server",
 		Namespace: "argocd",
 	}
@@ -76,23 +77,26 @@ var (
 
 	newArgocdServerExpectedRequest = reconcile.Request{NamespacedName: newArgocdServerRequestKey}
 
-	argocdServerPod = &corev1.Pod{
+	argocdServerService = &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Pod",
+			Kind:       "Service",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "argocd-server",
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"app.kubernetes.io/name": "argocd-server",
+				"app.kubernetes.io/part-of":   "argocd",
+				"app.kubernetes.io/component": "server",
 			},
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
 				{
-					Name:  "nginx",
-					Image: "nginx",
+					Name:       "http",
+					Port:       80,
+					Protocol:   "TCP",
+					TargetPort: intstr.FromInt(8080),
 				},
 			},
 		},
@@ -168,11 +172,11 @@ func TestReconcile(t *testing.T) {
 	g.Expect(c.Create(context.TODO(), argocdServerNamespace)).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), argocdServerNamespace)
 
-	// Create argocd server Pod in the argocd namespace
-	existingArgocdServerPod := argocdServerPod.DeepCopy()
+	// Create argocd server Service in the argocd namespace
+	existingArgocdServerService := argocdServerService.DeepCopy()
 
-	g.Expect(c.Create(context.TODO(), existingArgocdServerPod)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), existingArgocdServerPod)
+	g.Expect(c.Create(context.TODO(), existingArgocdServerService)).NotTo(gomega.HaveOccurred())
+	defer c.Delete(context.TODO(), existingArgocdServerService)
 
 	// Create the cluster namespace.
 	g.Expect(c.Create(context.TODO(), cluster1Namespace)).NotTo(gomega.HaveOccurred())
@@ -230,23 +234,23 @@ func TestReconcile(t *testing.T) {
 
 	g.Expect(len(argocdSecretlist.Items)).To(gomega.Equal(1))
 
-	// test4: delete the argocd server pod, check its argocd cluster secret is removed from the argocd namespace
-	existingArgocdServerPod = &corev1.Pod{}
-	err = c.Get(context.TODO(), argocdServerPodKey, existingArgocdServerPod)
+	// test4: delete the argocd server Service, check its argocd cluster secret is removed from the argocd namespace
+	existingArgocdServerService = &corev1.Service{}
+	err = c.Get(context.TODO(), argocdServerServiceKey, existingArgocdServerService)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	err = c.Delete(context.TODO(), existingArgocdServerPod)
+	err = c.Delete(context.TODO(), existingArgocdServerService)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	ArgocdServerPod := &corev1.Pod{}
+	ArgocdServerService := &corev1.Service{}
 
 	for i := 0; i < 10; i++ {
 		time.Sleep(5 * time.Second)
 
-		err = c.Get(context.TODO(), argocdServerPodKey, ArgocdServerPod)
+		err = c.Get(context.TODO(), argocdServerServiceKey, ArgocdServerService)
 
 		if err != nil && errors.IsNotFound(err) {
-			// make sure the argocd server pod is gone before checking argocd cluster secrets
+			// make sure the argocd server Service is gone before checking argocd cluster secrets
 			g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(argocdServerExpectedRequest)))
 
 			argocdSecretlist = &corev1.SecretList{}
@@ -258,15 +262,15 @@ func TestReconcile(t *testing.T) {
 		}
 	}
 
-	// test5: create argocd server pod in the new namespace new-argocd, check its argocd cluster secret is synced to the new namespace
+	// test5: create argocd server Service in the new namespace new-argocd, check its argocd cluster secret is synced to the new namespace
 	g.Expect(c.Create(context.TODO(), newArgocdServerNamespace)).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), newArgocdServerNamespace)
 
-	newArgocdServerPod := argocdServerPod.DeepCopy()
-	newArgocdServerPod.SetNamespace("new-argocd")
+	newArgocdServerService := argocdServerService.DeepCopy()
+	newArgocdServerService.SetNamespace("new-argocd")
 
-	g.Expect(c.Create(context.TODO(), newArgocdServerPod)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), newArgocdServerPod)
+	g.Expect(c.Create(context.TODO(), newArgocdServerService)).NotTo(gomega.HaveOccurred())
+	defer c.Delete(context.TODO(), newArgocdServerService)
 
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(newArgocdServerExpectedRequest)))
 	time.Sleep(5 * time.Second)
