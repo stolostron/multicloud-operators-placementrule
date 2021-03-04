@@ -8,7 +8,7 @@ require (
 	github.com/go-openapi/spec v0.19.4
 	github.com/onsi/gomega v1.10.1
 	github.com/open-cluster-management/api v0.0.0-20201007180356-41d07eee4294
-	github.com/open-cluster-management/endpoint-operator v1.0.1-2020-05-28-18-29-00.0.20201123150704-b95ad181d88a
+	github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	k8s.io/api v0.19.3
