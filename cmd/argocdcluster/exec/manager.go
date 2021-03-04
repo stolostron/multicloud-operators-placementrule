@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 
-	endpointapis "github.com/open-cluster-management/endpoint-operator/pkg/apis"
+	endpointapis "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"

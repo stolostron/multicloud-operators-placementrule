@@ -142,6 +142,7 @@ github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 h1:Mn26/9ZMNWSw9C9ER
 github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32/go.mod h1:GIjDIg/heH5DOkXY3YJ/wNhfHsQHoXGjl8G8amsYQ1I=
 github.com/globalsign/mgo v0.0.0-20180905125535-1ca0a4f7cbcb/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
 github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
+github.com/go-bindata/go-bindata v3.1.2+incompatible/go.mod h1:xK8Dsgwmeed+BBsSy2XTopBn/8uK2HWuGSnA11C3Joo=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
@@ -387,6 +388,8 @@ github.com/open-cluster-management/api v0.0.0-20201007180356-41d07eee4294 h1:Ek/
 github.com/open-cluster-management/api v0.0.0-20201007180356-41d07eee4294/go.mod h1:F1hDJHtWuV7BAUtfL4XRS9GZjUpksleLgEcisNXvQEw=
 github.com/open-cluster-management/endpoint-operator v1.0.1-2020-05-28-18-29-00.0.20201123150704-b95ad181d88a h1:UeMxU38xfmNUc1OJNzdCigVlgFxNmCVpqia7qjK7eqo=
 github.com/open-cluster-management/endpoint-operator v1.0.1-2020-05-28-18-29-00.0.20201123150704-b95ad181d88a/go.mod h1:0vNOxhAdBd8zbBiwb/TW8auuIDcnJsHbNPBtWWzluTI=
+github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19 h1:qWTC5iBoxrId/AKYdTcU9wGIx1CRwXqdnD4VppDBVpQ=
+github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19/go.mod h1:YWcjLe+zqmdqPFvwzASizCa8JdXe5briBgxoP+r3CRM=
 github.com/open-cluster-management/library-e2e-go v0.0.0-20200620112055-c80fc3c14997/go.mod h1:glvUOJg5EAb1Lq0OPcYhl57PJTxN2T5xuSfdV3Iab4Y=
 github.com/open-cluster-management/library-go v0.0.0-20200828173847-299c21e6c3fc/go.mod h1:X9KdKajEnrx6+LQSjo+61gLdk4Ntmwp+YEYD0CIJT7I=
 github.com/opencontainers/go-digest v1.0.0-rc1/go.mod h1:cMLVZDEM3+U2I4VmLI6N8jQYUd2OVphdqWwCJHrFt2s=

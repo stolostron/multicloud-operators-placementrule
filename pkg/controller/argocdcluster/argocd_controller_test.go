@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	agentv1 "github.com/open-cluster-management/endpoint-operator/pkg/apis/agent/v1"
+	agentv1 "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis/agent/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 
 	"github.com/onsi/gomega"
