@@ -1,20 +1,31 @@
-#!/bin/bash
-echo "UNIT TESTS GO HERE!"
+#!/bin/bash -e
+###############################################################################
+# (c) Copyright IBM Corporation 2019, 2020. All Rights Reserved.
+# Note to U.S. Government Users Restricted Rights:
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+# Copyright (c) Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+###############################################################################
 
-echo "Install Kubebuilder components for test framework usage!"
+_script_dir=$(dirname "$0")
+if ! which patter > /dev/null; then      echo "Installing patter ..."; pushd $(mktemp -d) && GOSUMDB=off go get -u github.com/apg/patter && popd; fi
+if ! which gocovmerge > /dev/null; then  echo "Installing gocovmerge..."; pushd $(mktemp -d) && GOSUMDB=off go get -u github.com/wadey/gocovmerge && popd; fi
 
-_OS=$(go env GOOS)
-_ARCH=$(go env GOARCH)
-KubeBuilderVersion="2.3.1"
+export GOFLAGS=""
+mkdir -p test/unit/coverage
+echo 'mode: atomic' > test/unit/coverage/cover.out
+echo '' > test/unit/coverage/cover.tmp
+echo -e "${GOPACKAGES// /\\n}" | xargs -n1 -I{} $_script_dir/test-package.sh {} ${GOPACKAGES// /,}
 
-# download kubebuilder and extract it to tmp
-curl -L https://go.kubebuilder.io/dl/"$KubeBuilderVersion"/"${_OS}"/"${_ARCH}" | tar -xz -C /tmp/
+if [ ! -f test/unit/coverage/cover.out ]; then
+    echo "Coverage file test/unit/coverage/cover.out does not exist"
+    exit 0
+fi
 
-# move to a long-term location and put it on your path
-# (you'll need to set the KUBEBUILDER_ASSETS env var if you put it somewhere else)
-sudo mv /tmp/kubebuilder_"$KubeBuilderVersion"_"${_OS}"_"${_ARCH}" /usr/local/kubebuilder
-export PATH=$PATH:/usr/local/kubebuilder/bin
+COVERAGE=$(go tool cover -func=test/unit/coverage/cover.out | grep "total:" | awk '{ print $3 }' | sed 's/[][()><%]/ /g')
+echo "-------------------------------------------------------------------------"
+echo "TOTAL COVERAGE IS ${COVERAGE}%"
+echo "-------------------------------------------------------------------------"
 
-# Run unit test
-export IMAGE_NAME_AND_VERSION=${1}
-make test
+go tool cover -html=test/unit/coverage/cover.out -o=test/unit/coverage/cover.html
