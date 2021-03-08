@@ -4,8 +4,8 @@
 
 - [Contributing guidelines](#contributing-guidelines)
     - [Developer Certificate of Origin](#developer-certificate-of-origin)
-    - [Contributing A Patch](#contributing-a-patch)
-    - [Issue and Pull Request Management](#issue-and-pull-request-management)
+    - [Contributing a patch](#contributing-a-patch)
+    - [Issue and pull request management](#issue-and-pull-request-management)
     - [Pre-check before submitting a PR](#pre-check-before-submitting-a-pr)
     - [Build images](#build-images)
 
@@ -15,9 +15,9 @@
 
 ## Developer Certificate of Origin
 
-This repository built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
+This repository is built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on pull requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
 
-## Contributing A Patch
+## Contributing a patch
 
 1. Submit an issue describing your proposed change to the repo in question.
 1. The [repo owners](OWNERS) will respond to your issue promptly.
@@ -25,16 +25,15 @@ This repository built with [probot](https://github.com/probot/probot) that enfor
 1. Commit your changes with DCO
 1. Submit a pull request.
 
-## Issue and Pull Request Management
+## Issue and pull request management
 
 Anyone may comment on issues and submit reviews for pull requests.
 
-Repo maintainers can assign you an issue or pull request by leaving a
-`/assign <your Github ID>` comment on the issue or pull request.
+Repo maintainers can assign you an issue or pull request by leaving an `/assign <your Github ID>` comment on the issue or pull request.
 
 ## Pre-check before submitting a PR
 
-After your PR is ready to commit, please run following commands to check your code.
+After your PR is ready to commit, please run following commands to check your code:
 
 ```shell
 make check
@@ -43,11 +42,11 @@ make test
 
 ## Build images
 
-Make sure your code build passed.
+Make sure your code build passed. Run the following command:
 
 ```shell
 export BUILD_LOCALLY=1
 make
 ```
 
-Now, you can follow the [getting started guide](./README.md#getting-started) to work with the xxx.
+Now, you can follow the [Getting started guide](./README.md#getting-started) to work with the repository.
