@@ -16,7 +16,7 @@ spec:
       containers:
         - name: multicluster-operators-placementrule
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: quay.io/open-cluster-management/multicluster-operators-placementrule:community-latest
           command:
           - multicluster-operators-placementrule
           imagePullPolicy: Always
