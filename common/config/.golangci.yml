@@ -33,6 +33,7 @@ linters:
     - gochecknoinits
     - goconst
     - gocyclo
+    - gomnd
     - gosec
     - nakedret
     - prealloc
