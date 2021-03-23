@@ -50,7 +50,7 @@ Check the [Security Doc](SECURITY.md) if you've found a security issue.
 
 ## References
 
-### multicloud-operators repositories
+### multicloud-operators repositories 
 
 - [multicloud-operators-application](https://github.com/open-cluster-management/multicloud-operators-application)
 - [multicloud-operators-channel](https://github.com/open-cluster-management/multicloud-operators-channel)
