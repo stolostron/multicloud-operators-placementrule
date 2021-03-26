@@ -27,6 +27,10 @@ _tap_name=${_tap_name//\//_}
 
 mkdir -p $_tap_out_dir
 
+PATH=/go/src/github.com/open-cluster-management/multicloud-operators-placementrule/test_tmp/bin/kubebuilder/bin:${PATH}
+export PATH
+export KUBEBUILDER_ASSETS=/go/src/github.com/open-cluster-management/multicloud-operators-placementrule/test_tmp/bin/kubebuilder/bin
+
 # Run tests
 # DO NOT USE -coverpkg=./...
 go test -v -cover -coverpkg=$_cover_pkgs -covermode=atomic -coverprofile=test/unit/coverage/cover.tmp $_package 2> >( grep -v "warning: no packages being tested depend on" >&2 ) | $GOPATH/bin/patter | tee $_tap_out_dir/$_tap_name.tap | grep -v "TAP version 13" | grep -v ": PASS:" | grep -v -i "# /us"
