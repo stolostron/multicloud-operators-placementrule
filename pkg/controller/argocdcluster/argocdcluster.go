@@ -16,9 +16,12 @@ package argocdcluster
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 
 	agentv1 "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis/agent/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -94,6 +97,18 @@ func (r *ReconcileSecret) DeleteClusterSecret(existingSecretKey types.Namespaced
 }
 
 func (r *ReconcileSecret) CreateClusterSecret(newClusterServer string, newArgocdSecret ArgocdCluster) error {
+	u, err := url.Parse(newClusterServer)
+	if err != nil {
+		klog.Errorf("Failed to parse cluster server url. err: %v", err)
+		return err
+	}
+
+	truncatedServerURL := utils.ValidateK8sLabel(u.Hostname())
+
+	if truncatedServerURL == "" {
+		return errors.New(fmt.Sprintf("Invalid hostname in the API URL: %v", u))
+	}
+
 	// create the new cluster secret in the argocd server namespace
 	newSecret := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -104,8 +119,10 @@ func (r *ReconcileSecret) CreateClusterSecret(newClusterServer string, newArgocd
 			Name:      newArgocdSecret.SecretName,
 			Namespace: ArgocdServerNamespace,
 			Labels: map[string]string{
-				"argocd.argoproj.io/secret-type":              "cluster",
-				"apps.open-cluster-management.io/acm-cluster": "true",
+				"argocd.argoproj.io/secret-type":                 "cluster",
+				"apps.open-cluster-management.io/acm-cluster":    "true",
+				"apps.open-cluster-management.io/cluster-name":   newArgocdSecret.ClusterName,
+				"apps.open-cluster-management.io/cluster-server": truncatedServerURL,
 			},
 		},
 		Type: "Opaque",
@@ -118,7 +135,7 @@ func (r *ReconcileSecret) CreateClusterSecret(newClusterServer string, newArgocd
 
 	klog.Infof("Creating new ArgoCD cluster secret: %v/%v", ArgocdServerNamespace, newArgocdSecret.SecretName)
 
-	err := r.Create(context.TODO(), newSecret)
+	err = r.Create(context.TODO(), newSecret)
 
 	if err != nil {
 		klog.Errorf("Failed to create new ArgoCD cluster secret. name: %v/%v, error: %v", ArgocdServerNamespace, newArgocdSecret.SecretName, err)
