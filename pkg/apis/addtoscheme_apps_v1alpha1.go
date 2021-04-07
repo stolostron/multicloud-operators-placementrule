@@ -14,21 +14,9 @@
 
 package apis
 
-import (
-	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
-)
+import v1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 
-// AddToSchemes may be used to add all resources defined in the project to a Scheme.
-var AddToSchemes runtime.SchemeBuilder
-
-// AddToScheme adds all Resources to the Scheme.
-func AddToScheme(s *runtime.Scheme) error {
-	err := spokeClusterV1.AddToScheme(scheme.Scheme)
-	if err != nil {
-		return err
-	}
-
-	return AddToSchemes.AddToScheme(s)
+func init() {
+	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
+	AddToSchemes = append(AddToSchemes, v1alpha1.SchemeBuilder.AddToScheme)
 }
