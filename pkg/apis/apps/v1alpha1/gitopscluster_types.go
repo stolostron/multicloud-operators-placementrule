@@ -26,19 +26,19 @@ import (
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope="Cluster"
 
-// MultiClusterImport is the Schema for the multiclusterimports API.
-type MultiClusterImport struct {
+// GitOpsCluster is the Schema for the gitopsclusters API.
+type GitOpsCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MultiClusterImportSpec   `json:"spec,omitempty"`
-	Status MultiClusterImportStatus `json:"status,omitempty"`
+	Spec   GitOpsClusterSpec   `json:"spec,omitempty"`
+	Status GitOpsClusterStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// MultiClusterImportSpec defines the desired state of MultiClusterImport.
-type MultiClusterImportSpec struct {
+// GitOpsClusterSpec defines the desired state of GitOpsCluster.
+type GitOpsClusterSpec struct {
 	ArgoServer   ArgoServerSpec          `json:"ArgoServer,omitempty"`
 	PlacementRef *corev1.ObjectReference `json:"placementRef,omitempty"`
 }
@@ -51,8 +51,8 @@ type ArgoServerSpec struct {
 
 // +kubebuilder:object:root=true
 
-// MultiClusterImportStatus defines the observed state of MultiClusterImport.
-type MultiClusterImportStatus struct {
+// GitOpsClusterStatus defines the observed state of GitOpsCluster.
+type GitOpsClusterStatus struct {
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	Message        string      `json:"message,omitempty"`
 	Phase          string      `json:"phase,omitempty"`
@@ -60,13 +60,13 @@ type MultiClusterImportStatus struct {
 
 // +kubebuilder:object:root=true
 
-// MultiClusterImportList contains a list of MultiClusterImport.
-type MultiClusterImportList struct {
+// GitOpsClusterList contains a list of GitOpsCluster.
+type GitOpsClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MultiClusterImport `json:"items"`
+	Items           []GitOpsCluster `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MultiClusterImport{}, &MultiClusterImportList{})
+	SchemeBuilder.Register(&GitOpsCluster{}, &GitOpsClusterList{})
 }

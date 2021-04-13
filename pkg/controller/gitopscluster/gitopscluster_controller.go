@@ -14,28 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package multiclusterimport
+package gitopscluster
 
 import (
 	"context"
 
-	multiclusterImportV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
+	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// ReconcileMultiClusterImport reconciles a MultiClusterImport object.
-type ReconcileMultiClusterImport struct {
+// ReconcileGitOpsCluster reconciles a GitOpsCluster object.
+type ReconcileGitOpsCluster struct {
 	client.Client
 }
 
-func (r *ReconcileMultiClusterImport) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	instance := &multiclusterImportV1alpha1.MultiClusterImport{}
+func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	instance := &gitopsclusterV1alpha1.GitOpsCluster{}
 
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 
-	klog.Info("Reconciling MultiClusterImport:", request.NamespacedName, " with Get err:", err)
+	klog.Info("Reconciling GitOpsCluster:", request.NamespacedName, " with Get err:", err)
 
 	return reconcile.Result{}, err
 }

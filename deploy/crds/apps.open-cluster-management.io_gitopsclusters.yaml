@@ -4,20 +4,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
   creationTimestamp: null
-  name: multiclusterimports.apps.open-cluster-management.io
+  name: gitopsclusters.apps.open-cluster-management.io
 spec:
   group: apps.open-cluster-management.io
   names:
-    kind: MultiClusterImport
-    listKind: MultiClusterImportList
-    plural: multiclusterimports
-    singular: multiclusterimport
+    kind: GitOpsCluster
+    listKind: GitOpsClusterList
+    plural: gitopsclusters
+    singular: gitopscluster
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: MultiClusterImport is the Schema for the multiclusterimports
+        description: GitOpsCluster is the Schema for the gitopsclusters
           API
         properties:
           apiVersion:
@@ -33,7 +33,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: MultiClusterImportSpec defines the desired state of MultiClusterImport.
+            description: GitOpsClusterSpec defines the desired state of GitOpsCluster.
             properties:
               ArgoServer:
                 description: ArgoServerSpec defines a argo server installed in a managed
@@ -105,7 +105,7 @@ spec:
                 type: object
             type: object
           status:
-            description: MultiClusterImportStatus defines the observed state of MultiClusterImport
+            description: GitOpsClusterStatus defines the observed state of GitOpsCluster
             properties:
               lastUpdateTime:
                 format: date-time
