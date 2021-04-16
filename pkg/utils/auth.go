@@ -50,7 +50,7 @@ func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Obj
 		clusters = append(clusters, cl.DeepCopy())
 	}
 
-	clusters = filterClusterByUserIdentity(object, clusters, authClient, "deployables", "create")
+	clusters = filterClusterByUserIdentity(object, clusters, authClient, "managedclusters", "get")
 	validclMap := make(map[string]bool)
 
 	for _, cl := range clusters {
@@ -94,10 +94,10 @@ func filterClusterByUserIdentity(
 		sar := &rbacv1.SubjectAccessReview{
 			Spec: rbacv1.SubjectAccessReviewSpec{
 				ResourceAttributes: &rbacv1.ResourceAttributes{
-					Namespace: cluster.Namespace,
-					Group:     "apps.open-cluster-management.io",
-					Verb:      verb,
-					Resource:  resource,
+					Name:     cluster.Name,
+					Group:    "cluster.open-cluster-management.io",
+					Verb:     verb,
+					Resource: resource,
 				},
 				User:   user,
 				Groups: groups,
