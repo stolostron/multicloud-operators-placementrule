@@ -225,7 +225,7 @@ func (r *ReconcileSecret) loadClusterSecret(clusterSecrets ArgocdClusters, secre
 		newArgocdSecret.ArgocdSecretNamespace = ArgocdServerNamespace
 
 		if secretType == "ArgoCD" {
-			newArgocdSecret.ACMSecretNamespace = utils.GetACMClusterNamespace(sl.Name)
+			newArgocdSecret.ACMSecretNamespace = utils.GetManagedClusterNamespace(sl.Name)
 		} else if secretType == "ACM" {
 			newArgocdSecret.ACMSecretNamespace = sl.Namespace
 		} else {

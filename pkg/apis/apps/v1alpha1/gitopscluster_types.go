@@ -39,7 +39,7 @@ type GitOpsCluster struct {
 
 // GitOpsClusterSpec defines the desired state of GitOpsCluster.
 type GitOpsClusterSpec struct {
-	ArgoServer   ArgoServerSpec          `json:"ArgoServer,omitempty"`
+	ArgoServer   ArgoServerSpec          `json:"argoServer,omitempty"`
 	PlacementRef *corev1.ObjectReference `json:"placementRef,omitempty"`
 }
 

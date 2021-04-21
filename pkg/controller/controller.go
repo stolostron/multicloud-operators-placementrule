@@ -24,6 +24,8 @@ var AddToManagerFuncs []func(manager.Manager) error
 // AddArgocdClusterToManagerFuncs is a list of functions to add all Controllers to the Manager
 var AddArgocdClusterToManagerFuncs []func(manager.Manager) error
 
+var AddGitOpsClusterToManagerFuncs []func(manager.Manager) error
+
 // AddToManager adds all Controllers to the Manager
 func AddToManager(m manager.Manager) error {
 	for _, f := range AddToManagerFuncs {
@@ -38,6 +40,16 @@ func AddToManager(m manager.Manager) error {
 // AddArgocdToManager adds all ArgocdCluster Controllers to the Manager
 func AddArgocdClusterToManager(m manager.Manager) error {
 	for _, f := range AddArgocdClusterToManagerFuncs {
+		if err := f(m); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func AddGitOpsClusterToManager(m manager.Manager) error {
+	for _, f := range AddGitOpsClusterToManagerFuncs {
 		if err := f(m); err != nil {
 			return err
 		}

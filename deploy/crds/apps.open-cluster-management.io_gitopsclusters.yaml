@@ -35,7 +35,7 @@ spec:
           spec:
             description: GitOpsClusterSpec defines the desired state of GitOpsCluster.
             properties:
-              ArgoServer:
+              argoServer:
                 description: ArgoServerSpec defines a argo server installed in a managed
                   cluster.
                 properties:
