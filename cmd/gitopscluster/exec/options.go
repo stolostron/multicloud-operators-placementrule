@@ -1,4 +1,4 @@
-// Copyright 2019 The Kubernetes Authors.
+// Copyright 2021 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ import (
 	pflag "github.com/spf13/pflag"
 )
 
-// PlacementRuleCMDOptions for command line flag parsing
-type PlacementRuleCMDOptions struct {
+// GitOpsClusterCMDOptions for command line flag parsing
+type GitOpsClusterCMDOptions struct {
 	MetricsAddr string
 }
 
-var options = PlacementRuleCMDOptions{
+var options = GitOpsClusterCMDOptions{
 	MetricsAddr: "",
 }
 
