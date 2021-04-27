@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
@@ -50,6 +51,8 @@ func Add(mgr manager.Manager) error {
 
 var _ reconcile.Reconciler = &ReconcileGitOpsCluster{}
 
+var errInvalidPlacementRef = errors.New("invalid placement reference")
+
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	authCfg := mgr.GetConfig()
@@ -60,23 +63,6 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	}
 
 	return dsRS
-}
-
-type argocdSecretRuleMapper struct {
-	client.Client
-}
-
-func (mapper *argocdSecretRuleMapper) Map(obj handler.MapObject) []reconcile.Request {
-	// if managed cluster secret is updated, reconcile its secret in argo namespace
-	var requests []reconcile.Request
-
-	managedClusterSecretKey := types.NamespacedName{
-		Name:      obj.Meta.GetName(),
-		Namespace: utils.GetManagedClusterNamespace(obj.Meta.GetName())}
-
-	requests = append(requests, reconcile.Request{NamespacedName: managedClusterSecretKey})
-
-	return requests
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -123,7 +109,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	klog.Info("Reconciling GitOpsClusters for watched resource change: ", request.NamespacedName)
 
-	// Get all existing managed cluster secrets for ArgoCD, not the ones from the managed cluster namespaces
+	// Get all existing GitOps managed cluster secrets, not the ones from the managed cluster namespaces
 	managedClusterSecretsInArgo, err := r.GetAllManagedClusterSecretsInArgo()
 
 	if err != nil {
@@ -131,14 +117,14 @@ func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{Requeue: false}, nil
 	}
 
-	// Then save it in a map. As we create/update managed cluster secrets for ArgoCD while
+	// Then save it in a map. As we create/update GitOps managed cluster secrets while
 	// reconciling each GitOpsCluster resource, remove the secret from this list.
 	// After reconciling all GitOpsCluster resources, the secrets left in this list are
 	// orphan secrets to be removed.
-	managedClusterSecretsInArgoList := map[types.NamespacedName]string{}
+	orphanGitOpsClusterSecretList := map[types.NamespacedName]string{}
 
 	for _, secret := range managedClusterSecretsInArgo.Items {
-		managedClusterSecretsInArgoList[types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}] = secret.Namespace + "/" + secret.Name
+		orphanGitOpsClusterSecretList[types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}] = secret.Namespace + "/" + secret.Name
 	}
 
 	// Get all GitOpsCluster resources
@@ -148,6 +134,7 @@ func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{Requeue: false}, nil
 	}
 
+	// For any watched resource change, process all GitOpsCluster CRs to create new secrets or update existing secrets.
 	for _, gitOpsCluster := range gitOpsClusters.Items {
 		klog.Info("Process GitOpsCluster: " + gitOpsCluster.Namespace + "/" + gitOpsCluster.Name)
 
@@ -157,69 +144,132 @@ func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile
 
 		if err != nil && k8errors.IsNotFound(err) {
 			klog.Infof("GitOpsCluster %s/%s deleted", gitOpsCluster.Namespace, gitOpsCluster.Name)
-			// deleted? skip to the next GitOpsCluster resource
+			// deleted? just skip to the next GitOpsCluster resource
 			continue
 		}
 
-		// 1. Verify that spec.argoServer.argoNamespace is a valid ArgoCD namespace
-		if !r.VerifyArgocdNamespace(gitOpsCluster.Spec.ArgoServer.ArgoNamespace) {
-			klog.Info("invalid argocd namespace because argo server pod was not found")
-			instance.Status.LastUpdateTime = metav1.Now()
-			instance.Status.Phase = "failed"
-			instance.Status.Message = "invalid gitops namespace because argo server pod was not found"
-			r.Client.Status().Update(context.TODO(), instance)
-		}
-
-		// 2. Get the list of managed clusters
-		managedClusters, err := r.GetManagedClusters(*instance.Spec.PlacementRef)
-		// 2a. Get the placement decision
-		// 2b. Get the managed cluster names from the placement decision
-		if err != nil {
-			klog.Info("failed to get managed cluster list")
-			instance.Status.LastUpdateTime = metav1.Now()
-			instance.Status.Phase = "failed"
-			instance.Status.Message = err.Error()
-			r.Client.Status().Update(context.TODO(), instance)
-		}
-
-		klog.Infof("adding managed clusters %v into argo namespace %s", managedClusters, instance.Spec.ArgoServer.ArgoNamespace)
-
-		// 3. Copy secret contents from the managed cluster namespaces and create the secret in spec.argoServer.argoNamespace
-		err = r.AddManagedClustersToArgo(instance.Spec.ArgoServer.ArgoNamespace, managedClusters, managedClusterSecretsInArgoList)
+		// reconcile one GitOpsCluster resource
+		requeueInterval, err := r.reconcileGitOpsCluster(*instance, orphanGitOpsClusterSecretList)
 
 		if err != nil {
-			klog.Info("failed to add managed clusters to argo")
-			instance.Status.LastUpdateTime = metav1.Now()
-			instance.Status.Phase = "failed"
-			instance.Status.Message = err.Error()
-			r.Client.Status().Update(context.TODO(), instance)
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(requeueInterval) * time.Minute}, err
 		}
-
-		instance.Status.LastUpdateTime = metav1.Now()
-		instance.Status.Phase = "successful"
-		instance.Status.Message = fmt.Sprintf("Added managed clusters %v to gitops namespace %s", managedClusters, instance.Spec.ArgoServer.ArgoNamespace)
-		r.Client.Status().Update(context.TODO(), instance)
 	}
 
-	for key, secretName := range managedClusterSecretsInArgoList {
+	// Remove all invalid/orphan GitOps cluster secrets
+	if !r.cleanupOrphanSecrets(orphanGitOpsClusterSecretList) {
+		// If it failed to delete orphan GitOps managed cluster secrets, reconile again in 10 minutes.
+		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(10) * time.Minute}, err
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileGitOpsCluster) cleanupOrphanSecrets(orphanGitOpsClusterSecretList map[types.NamespacedName]string) bool {
+	cleanupSuccessful := true
+
+	// 4. Delete all orphan GitOps managed cluster secrets
+	for key, secretName := range orphanGitOpsClusterSecretList {
 		secretToDelete := &v1.Secret{}
 
 		err := r.Get(context.TODO(), key, secretToDelete)
 
 		if err == nil {
-			klog.Infof("Deleting orphan managed cluster secret %s", secretName)
+			klog.Infof("Deleting orphan GitOps managed cluster secret %s", secretName)
 
 			err = r.Delete(context.TODO(), secretToDelete)
 
 			if err != nil {
-				klog.Errorf("failed to delete orphan managed cluster secret %s, err: ", key, err.Error())
+				klog.Errorf("failed to delete orphan managed cluster secret %s, err: %s", key, err.Error())
+
+				cleanupSuccessful = false
+
+				continue
 			}
 		}
 	}
 
-	return reconcile.Result{}, err
+	return cleanupSuccessful
 }
 
+func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
+	gitOpsCluster gitopsclusterV1alpha1.GitOpsCluster,
+	orphanSecretsList map[types.NamespacedName]string) (int, error) {
+	instance := gitOpsCluster.DeepCopy()
+
+	// 1. Verify that spec.argoServer.argoNamespace is a valid ArgoCD namespace
+	if !r.VerifyArgocdNamespace(gitOpsCluster.Spec.ArgoServer.ArgoNamespace) {
+		klog.Info("invalid argocd namespace because argo server pod was not found")
+
+		instance.Status.LastUpdateTime = metav1.Now()
+		instance.Status.Phase = "failed"
+		instance.Status.Message = "invalid gitops namespace because argo server pod was not found"
+
+		err := r.Client.Status().Update(context.TODO(), instance)
+
+		if err != nil {
+			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
+			return 3, err
+		}
+	}
+
+	// 2. Get the list of managed clusters
+	managedClusters, err := r.GetManagedClusters(*instance.Spec.PlacementRef)
+	// 2a. Get the placement decision
+	// 2b. Get the managed cluster names from the placement decision
+	if err != nil {
+		klog.Info("failed to get managed cluster list")
+
+		instance.Status.LastUpdateTime = metav1.Now()
+		instance.Status.Phase = "failed"
+		instance.Status.Message = err.Error()
+
+		err := r.Client.Status().Update(context.TODO(), instance)
+
+		if err != nil {
+			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
+			return 3, err
+		}
+	}
+
+	klog.Infof("adding managed clusters %v into argo namespace %s", managedClusters, instance.Spec.ArgoServer.ArgoNamespace)
+
+	// 3. Copy secret contents from the managed cluster namespaces and create the secret in spec.argoServer.argoNamespace
+	err = r.AddManagedClustersToArgo(instance.Spec.ArgoServer.ArgoNamespace, managedClusters, orphanSecretsList)
+
+	if err != nil {
+		klog.Info("failed to add managed clusters to argo")
+
+		instance.Status.LastUpdateTime = metav1.Now()
+		instance.Status.Phase = "failed"
+		instance.Status.Message = err.Error()
+
+		err := r.Client.Status().Update(context.TODO(), instance)
+
+		if err != nil {
+			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
+			return 3, err
+		}
+
+		// it passed all vaidations but simply failed to create or update secrets. Reconile again in 1 minute.
+		return 1, err
+	}
+
+	instance.Status.LastUpdateTime = metav1.Now()
+	instance.Status.Phase = "successful"
+	instance.Status.Message = fmt.Sprintf("Added managed clusters %v to gitops namespace %s", managedClusters, instance.Spec.ArgoServer.ArgoNamespace)
+
+	err = r.Client.Status().Update(context.TODO(), instance)
+
+	if err != nil {
+		klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
+		return 3, err
+	}
+
+	return 0, nil
+}
+
+// GetAllManagedClusterSecretsInArgo returns list of secrets from all GitOps managed cluster
 func (r *ReconcileGitOpsCluster) GetAllManagedClusterSecretsInArgo() (v1.SecretList, error) {
 	klog.Info("Getting all managed cluster secrets from argo namespaces")
 
@@ -250,6 +300,7 @@ func (r *ReconcileGitOpsCluster) GetAllManagedClusterSecretsInArgo() (v1.SecretL
 	return *secretList, nil
 }
 
+// GetAllGitOpsClusters returns all GitOpsCluster CRs
 func (r *ReconcileGitOpsCluster) GetAllGitOpsClusters() (gitopsclusterV1alpha1.GitOpsClusterList, error) {
 	klog.Info("Getting all GitOpsCluster resources")
 
@@ -265,16 +316,19 @@ func (r *ReconcileGitOpsCluster) GetAllGitOpsClusters() (gitopsclusterV1alpha1.G
 	return *gitOpsClusterList, nil
 }
 
+// VerifyArgocdNamespace verifies that the given argoNamespace is a valid namspace by verifying that ArgoCD is actually
+// installed in that namespace
 func (r *ReconcileGitOpsCluster) VerifyArgocdNamespace(argoNamespace string) bool {
-	// Check if argo server pod exists in the namespace
+	// Check if argo server pod exists in the namespace. This is the community ArgoCD installation.
 	isArgoCDNamespace := r.FindPodsWithLabelsAndNamespace(argoNamespace, map[string]string{"app.kubernetes.io/name": "argocd-server"})
 
-	// Check if opernshift gitops argo server pod exists in the namespace
+	// Check if opernshift gitops argo server pod exists in the namespace. This is the RH OpenShift GitOps operator installation.
 	isGitOpsNamespace := r.FindPodsWithLabelsAndNamespace(argoNamespace, map[string]string{"app.kubernetes.io/name": "openshift-gitops-server"})
 
 	return isArgoCDNamespace || isGitOpsNamespace
 }
 
+// FindPodsWithLabelsAndNamespace finds a list of pods with provided labels from the specified namespace
 func (r *ReconcileGitOpsCluster) FindPodsWithLabelsAndNamespace(namespace string, labels map[string]string) bool {
 	podList := &v1.PodList{}
 	listopts := &client.ListOptions{}
@@ -310,10 +364,11 @@ func (r *ReconcileGitOpsCluster) FindPodsWithLabelsAndNamespace(namespace string
 	return true
 }
 
+// GetManagedClusters retrieves managed cluster names from placement decision
 func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectReference) ([]string, error) {
 	if placementref.Kind != "Placement" ||
 		placementref.APIVersion != "cluster.open-cluster-management.io/v1alpha1" {
-		return nil, errors.New("invalid placementref kind: " + placementref.Kind + " apiVersion: " + placementref.APIVersion)
+		return nil, errInvalidPlacementRef
 	}
 
 	// TODO: Find the placementdecision with placementref.Name and placementref.Namespace
@@ -322,9 +377,13 @@ func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectRefere
 	return []string{"local-cluster"}, nil
 }
 
-func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(argoNamespace string, managedClusters []string, allSecretsList map[types.NamespacedName]string) error {
+// AddManagedClustersToArgo copies a managed cluster secret from the managed cluster namespace to ArgoCD namespace
+func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(
+	argoNamespace string,
+	managedClusters []string,
+	orphanSecretsList map[types.NamespacedName]string) error {
 	for _, managedCluster := range managedClusters {
-		klog.Infof("adding managed cluster %s to gitops namespace ", managedCluster, argoNamespace)
+		klog.Infof("adding managed cluster %s to gitops namespace %s", managedCluster, argoNamespace)
 
 		secretName := managedCluster + "-cluster-secret"
 		managedClusterSecretKey := types.NamespacedName{Name: secretName, Namespace: managedCluster}
@@ -344,13 +403,15 @@ func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(argoNamespace string, 
 			return err
 		}
 
+		// Since thie secret is now added to Argo, it is not orphan.
 		argoManagedClusterSecretKey := types.NamespacedName{Name: secretName, Namespace: argoNamespace}
-		delete(allSecretsList, argoManagedClusterSecretKey)
+		delete(orphanSecretsList, argoManagedClusterSecretKey)
 	}
 
 	return nil
 }
 
+// CreateManagedClusterSecretInArgo creates a managed cluster secret with specific metadata in Argo namespace
 func (r *ReconcileGitOpsCluster) CreateManagedClusterSecretInArgo(argoNamespace string, managedClusterSecret v1.Secret) error {
 	labels := managedClusterSecret.GetLabels()
 

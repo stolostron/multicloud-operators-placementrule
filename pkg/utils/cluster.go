@@ -79,11 +79,7 @@ var GitOpsClusterPredicateFunc = predicate.Funcs{
 		oldGitOpsCluster := e.ObjectOld.(*gitopsclusterV1alpha1.GitOpsCluster)
 		newGitOpsCluster := e.ObjectNew.(*gitopsclusterV1alpha1.GitOpsCluster)
 
-		if !reflect.DeepEqual(oldGitOpsCluster.Spec, newGitOpsCluster.Spec) {
-			return true
-		}
-
-		return false
+		return !reflect.DeepEqual(oldGitOpsCluster.Spec, newGitOpsCluster.Spec)
 	},
 }
 
