@@ -132,10 +132,12 @@ coverage:
 build:
 	@common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
 	@common/scripts/gobuild.sh build/_output/bin/argocdcluster ./cmd/argocdcluster
+	@common/scripts/gobuild.sh build/_output/bin/gitopscluster ./cmd/gitopscluster
 
 local:
 	@GOOS=darwin common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
 	@GOOS=darwin common/scripts/gobuild.sh build/_output/bin/argocdcluster ./cmd/argocdcluster
+	@GOOS=darwin common/scripts/gobuild.sh build/_output/bin/gitopscluster ./cmd/gitopscluster
 
 ############################################################
 # images section
