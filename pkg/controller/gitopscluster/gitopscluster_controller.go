@@ -20,15 +20,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -41,6 +44,9 @@ import (
 // ReconcileGitOpsCluster reconciles a GitOpsCluster object.
 type ReconcileGitOpsCluster struct {
 	client.Client
+	authClient kubernetes.Interface
+	scheme     *runtime.Scheme
+	lock       sync.Mutex
 }
 
 // Add creates a new argocd cluster Controller and adds it to the Manager with default RBAC.
@@ -57,9 +63,13 @@ var errInvalidPlacementRef = errors.New("invalid placement reference")
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	authCfg := mgr.GetConfig()
 	klog.Infof("Host: %v, BearerToken: %v", authCfg.Host, authCfg.BearerToken)
+	kubeClient := kubernetes.NewForConfigOrDie(authCfg)
 
 	dsRS := &ReconcileGitOpsCluster{
-		Client: mgr.GetClient(),
+		Client:     mgr.GetClient(),
+		scheme:     mgr.GetScheme(),
+		authClient: kubeClient,
+		lock:       sync.Mutex{},
 	}
 
 	return dsRS
@@ -211,6 +221,8 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
 			return 3, err
 		}
+
+		return 0, nil
 	}
 
 	// 2. Get the list of managed clusters
@@ -374,7 +386,7 @@ func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectRefere
 	// TODO: Find the placementdecision with placementref.Name and placementref.Namespace
 	//       and get the list of managed clusters
 
-	return []string{"local-cluster"}, nil
+	return []string{"cluster1"}, nil
 }
 
 // AddManagedClustersToArgo copies a managed cluster secret from the managed cluster namespace to ArgoCD namespace

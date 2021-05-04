@@ -43,6 +43,9 @@ spec:
                     type: string
                   cluster:
                     type: string
+                required:
+                  - argoNamespace
+                  - cluster
                 type: object
               placementRef:
                 description: 'ObjectReference contains enough information to let you
@@ -103,6 +106,9 @@ spec:
                     description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                     type: string
                 type: object
+            required:
+              - argoServer
+              - placementRef
             type: object
           status:
             description: GitOpsClusterStatus defines the observed state of GitOpsCluster
