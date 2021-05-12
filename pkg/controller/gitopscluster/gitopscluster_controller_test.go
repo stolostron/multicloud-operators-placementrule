@@ -383,7 +383,7 @@ func expectedSecretCreated(c client.Client, expectedSecretKey types.NamespacedNa
 
 		time.Sleep(time.Second * 3)
 
-		timeout = timeout + 3
+		timeout += 3
 	}
 }
 
@@ -449,7 +449,7 @@ func checkOrphanSecretDeleted(c client.Client, expectedSecretKey types.Namespace
 
 		time.Sleep(time.Second * 3)
 
-		timeout = timeout + 3
+		timeout += 3
 	}
 }
 
