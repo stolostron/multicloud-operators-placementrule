@@ -30,8 +30,8 @@ import (
 )
 
 var (
-	AdminUsers  = map[string]bool{"system:admin": true, "kube:admin": true}
-	AdminGroups = map[string]bool{"system:masters": true, "system:cluster-admins": true}
+	AdminUsers  = map[string]bool{"admin": true, "multicluster-observability-operator": true}
+	AdminGroups = map[string]bool{"masters": true, "cluster-admins": true}
 )
 
 func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*spokeClusterV1.ManagedCluster) error {
@@ -150,12 +150,26 @@ func ExtractUserAndGroup(annotations map[string]string) (string, []string) {
 }
 
 func IfClusterAdmin(user string, groups []string) bool {
-	if _, ok := AdminUsers[user]; ok {
+	newUser := user
+
+	ss := strings.Split(user, ":")
+	if len(ss) > 0 {
+		newUser = ss[len(ss)-1]
+	}
+
+	if _, ok := AdminUsers[newUser]; ok {
 		return true
 	}
 
 	for _, group := range groups {
-		if _, ok := AdminGroups[group]; ok {
+		newGroup := group
+
+		gg := strings.Split(group, ":")
+		if len(gg) > 0 {
+			newGroup = gg[len(gg)-1]
+		}
+
+		if _, ok := AdminGroups[newGroup]; ok {
 			return true
 		}
 	}
