@@ -96,7 +96,7 @@ type ClusterPlacementRuleMapper struct {
 	client.Client
 }
 
-// Map triggers all placements
+// Map triggers all placements containing ClusterConditions filters.
 func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.Request {
 	plList := &appv1alpha1.PlacementRuleList{}
 
@@ -117,6 +117,8 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 
 		requests = append(requests, reconcile.Request{NamespacedName: objkey})
 	}
+
+	klog.Infof("Those placementRules are triggered due to managed Cluster status change: %v", requests)
 
 	return requests
 }
