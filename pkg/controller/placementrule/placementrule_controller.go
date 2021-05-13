@@ -96,7 +96,7 @@ type ClusterPlacementRuleMapper struct {
 	client.Client
 }
 
-// Map triggers all placements containing ClusterConditions filters.
+// Map triggers all placements.
 func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.Request {
 	plList := &appv1alpha1.PlacementRuleList{}
 
