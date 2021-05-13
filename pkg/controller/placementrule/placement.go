@@ -317,6 +317,7 @@ func (r *ReconcilePlacementRule) checkUserPermission(annotations map[string]stri
 			Groups: groups,
 		},
 	}
+
 	result, err := r.authClient.AuthorizationV1().SubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
 	klog.Infof("user: %v, groups: %v, cluster:%v, result:%v, err:%v", user, groups, clusterName, result, err)
 
