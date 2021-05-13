@@ -267,7 +267,7 @@ func (r *ReconcilePlacementRule) filteClustersByUser(instance *appv1alpha1.Place
 	// if user or groups are known admin cluster, return all selected clusters
 	user, groups := utils.ExtractUserAndGroup(annotations)
 	if utils.IfClusterAdmin(user, groups) {
-		klog.V(1).Infof("All fetched clusters are returned as user/group is cluster admin. user: %v, groups: %v ", user, groups)
+		klog.Infof("All fetched clusters are returned as user/group is cluster admin. user: %v, groups: %v ", user, groups)
 
 		return nil
 	}
