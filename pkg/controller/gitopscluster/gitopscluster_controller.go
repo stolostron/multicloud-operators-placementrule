@@ -28,7 +28,6 @@ import (
 	agentv1 "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis/agent/v1"
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
@@ -694,7 +693,7 @@ func (r *ReconcileGitOpsCluster) CreateMigrationGitOpsCluster(clusterNames map[s
 				Cluster:       "local-cluster",
 				ArgoNamespace: "argocd1",
 			},
-			PlacementRef: &corev1.ObjectReference{
+			PlacementRef: &v1.ObjectReference{
 				Kind:       "Placement",
 				APIVersion: "cluster.open-cluster-management.io/v1alpha1",
 				Namespace:  namespace,

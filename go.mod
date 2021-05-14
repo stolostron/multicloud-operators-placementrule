@@ -3,6 +3,7 @@ module github.com/open-cluster-management/multicloud-operators-placementrule
 go 1.15
 
 require (
+	github.com/IBM/controller-filtered-cache v0.2.2
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/logr v0.3.0 // indirect
 	github.com/go-openapi/spec v0.19.4

@@ -18,11 +18,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/IBM/controller-filtered-cache/filteredcache"
 	endpointapis "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
@@ -49,6 +51,13 @@ func RunManager() {
 		klog.Info("LeaderElection disabled as not running in a cluster")
 	}
 
+	// Cache only the managed cluster secrets
+	filteredSecretMap := map[schema.GroupVersionKind]filteredcache.Selector{
+		v1.SchemeGroupVersion.WithKind("Secret"): {
+			LabelSelector: "apps.open-cluster-management.io/cluster-name,argocd.argoproj.io/secret-type==cluster",
+		},
+	}
+
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
@@ -56,6 +65,7 @@ func RunManager() {
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionID:        "multicloud-operators-gitopscluster-leader.open-cluster-management.io",
 		LeaderElectionNamespace: "kube-system",
+		NewCache:                filteredcache.NewFilteredCacheBuilder(filteredSecretMap),
 	})
 
 	if err != nil {
