@@ -98,23 +98,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return err
 		}
 
-		// Watch for managed cluster secret changes in managed cluster namespaces
+		// Watch for managed cluster secret changes in argo or managed cluster namespaces
+		// The manager started with cache that filters all other secrets so no predicate needed
 		err = c.Watch(
 			&source.Kind{Type: &v1.Secret{}},
-			&handler.EnqueueRequestForObject{},
-			utils.AcmClusterSecretPredicateFunc)
+			&handler.EnqueueRequestForObject{})
 		if err != nil {
 			return err
 		}
 
-		// Watch for managed cluster secret changes in argo namespaces
-		err = c.Watch(
-			&source.Kind{Type: &v1.Secret{}},
-			&handler.EnqueueRequestForObject{},
-			utils.ArgocdClusterSecretPredicateFunc)
-		if err != nil {
-			return err
-		}
 		// TODO: watch placement and placementdecision changes
 	}
 
