@@ -49,6 +49,8 @@ func Add(mgr manager.Manager) error {
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	authCfg := mgr.GetConfig()
+	authCfg.QPS = 100.0
+	authCfg.Burst = 200
 	kubeClient := kubernetes.NewForConfigOrDie(authCfg)
 
 	return &ReconcilePlacementRule{Client: mgr.GetClient(), scheme: mgr.GetScheme(), authClient: kubeClient}
@@ -56,8 +58,11 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New("placementrule-controller", mgr, controller.Options{Reconciler: r})
+	// Enable the concurrent reconcile in case some placementrule could take longer to generate cluster decisions
+	c, err := controller.New("placementrule-controller", mgr, controller.Options{
+		Reconciler:              r,
+		MaxConcurrentReconciles: 10,
+	})
 	if err != nil {
 		return err
 	}
@@ -96,7 +101,7 @@ type ClusterPlacementRuleMapper struct {
 	client.Client
 }
 
-// Map triggers all placements
+// Map triggers all placements.
 func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile.Request {
 	plList := &appv1alpha1.PlacementRuleList{}
 
@@ -117,6 +122,8 @@ func (mapper *ClusterPlacementRuleMapper) Map(obj handler.MapObject) []reconcile
 
 		requests = append(requests, reconcile.Request{NamespacedName: objkey})
 	}
+
+	klog.Infof("Those placementRules are triggered due to managed Cluster status change: %v", requests)
 
 	return requests
 }

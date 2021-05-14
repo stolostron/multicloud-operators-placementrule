@@ -15,15 +15,17 @@
 package placementrule
 
 import (
+	"context"
+	"sort"
+
 	"k8s.io/klog"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
-
-	"sort"
-
+	rbacv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (r *ReconcilePlacementRule) hubReconcile(instance *appv1alpha1.PlacementRule) error {
@@ -67,31 +69,30 @@ func (r *ReconcilePlacementRule) filteClustersByStatus(instance *appv1alpha1.Pla
 		return nil
 	}
 
+	// store all cluster condition defined in the placementrule instance to map[type]status
+	placementClusterCondMap := make(map[string]string)
+	for _, cond := range instance.Spec.ClusterConditions {
+		placementClusterCondMap[cond.Type] = string(cond.Status)
+	}
+
 	for k, cl := range clmap {
-		keep := true
+		condMatched := true
 
-		for _, cond := range instance.Spec.ClusterConditions {
-			condMatched := false
-
-			for _, clcond := range cl.Status.Conditions {
-				if cond.Type == clcond.Type && cond.Status == clcond.Status {
-					condMatched = true
+		for _, clCond := range cl.Status.Conditions {
+			if placementClusterStatus, ok := placementClusterCondMap[clCond.Type]; ok {
+				if placementClusterStatus != string(clCond.Status) {
+					condMatched = false
 					break
 				}
 			}
-
-			if !condMatched {
-				keep = false
-				break
-			}
 		}
 
-		klog.V(10).Info("Cond Check ", cl.Name, cl.Status.Conditions, keep)
-
-		if !keep {
+		if !condMatched {
 			delete(clmap, k)
 		}
 	}
+
+	klog.Infof("Cluster Conditions Check done, placementrule: %v/%v ", instance.Namespace, instance.Name)
 
 	return nil
 }
@@ -263,11 +264,70 @@ func (r *ReconcilePlacementRule) filteClustersByUser(instance *appv1alpha1.Place
 		return nil
 	}
 
-	err := utils.FilteClustersByIdentity(r.authClient, instance, clmap)
+	// if user or groups are known admin cluster, return all selected clusters
+	user, groups := utils.ExtractUserAndGroup(annotations)
+	if utils.IfClusterAdmin(user, groups) {
+		klog.Infof("All fetched clusters are returned as user/group is cluster admin. user: %v, groups: %v ", user, groups)
 
+		return nil
+	}
+
+	err := r.filteClustersByIdentityAnno(instance, clmap)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *ReconcilePlacementRule) filteClustersByIdentityAnno(instance *appv1alpha1.PlacementRule, clmap map[string]*spokeClusterV1.ManagedCluster) error {
+	objanno := instance.GetAnnotations()
+	if objanno == nil {
+		return nil
+	}
+
+	if _, ok := objanno[appv1alpha1.UserIdentityAnnotation]; !ok {
+		return nil
+	}
+
+	for clusterName, cl := range clmap {
+		manageCluster := cl.DeepCopy()
+		if !r.checkUserPermission(objanno, manageCluster) {
+			delete(clmap, clusterName)
+		}
+	}
+
+	return nil
+}
+
+// checkUserPermission checks if user can get managedCluster KIND resource.
+func (r *ReconcilePlacementRule) checkUserPermission(annotations map[string]string, managedCluster *spokeClusterV1.ManagedCluster) bool {
+	user, groups := utils.ExtractUserAndGroup(annotations)
+	clusterName := managedCluster.GetName()
+
+	sar := &rbacv1.SubjectAccessReview{
+		Spec: rbacv1.SubjectAccessReviewSpec{
+			ResourceAttributes: &rbacv1.ResourceAttributes{
+				Name:     clusterName,
+				Group:    "cluster.open-cluster-management.io",
+				Verb:     "get",
+				Resource: "managedclusters",
+			},
+			User:   user,
+			Groups: groups,
+		},
+	}
+
+	result, err := r.authClient.AuthorizationV1().SubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
+	klog.Infof("user: %v, groups: %v, cluster:%v, result:%v, err:%v", user, groups, clusterName, result, err)
+
+	if err != nil {
+		return false
+	}
+
+	if !result.Status.Allowed {
+		return false
+	}
+
+	return true
 }

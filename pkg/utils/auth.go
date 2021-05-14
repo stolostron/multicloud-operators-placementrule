@@ -29,6 +29,11 @@ import (
 	"k8s.io/klog"
 )
 
+var (
+	AdminUsers  = map[string]bool{"admin": true, "multicluster-observability-operator": true}
+	AdminGroups = map[string]bool{"masters": true, "cluster-admins": true}
+)
+
 func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*spokeClusterV1.ManagedCluster) error {
 	objmeta, err := meta.Accessor(object)
 	if err != nil {
@@ -90,7 +95,7 @@ func filterClusterByUserIdentity(
 	filteredClusters := []*spokeClusterV1.ManagedCluster{}
 
 	for _, cluster := range clusters {
-		user, groups := extractUserAndGroup(annotations)
+		user, groups := ExtractUserAndGroup(annotations)
 		sar := &rbacv1.SubjectAccessReview{
 			Spec: rbacv1.SubjectAccessReviewSpec{
 				ResourceAttributes: &rbacv1.ResourceAttributes{
@@ -119,7 +124,8 @@ func filterClusterByUserIdentity(
 
 	return filteredClusters
 }
-func extractUserAndGroup(annotations map[string]string) (string, []string) {
+
+func ExtractUserAndGroup(annotations map[string]string) (string, []string) {
 	var user string
 
 	var groups []string
@@ -141,4 +147,32 @@ func extractUserAndGroup(annotations map[string]string) (string, []string) {
 	}
 
 	return user, groups
+}
+
+func IfClusterAdmin(user string, groups []string) bool {
+	newUser := user
+
+	ss := strings.Split(user, ":")
+	if len(ss) > 0 {
+		newUser = ss[len(ss)-1]
+	}
+
+	if _, ok := AdminUsers[newUser]; ok {
+		return true
+	}
+
+	for _, group := range groups {
+		newGroup := group
+
+		gg := strings.Split(group, ":")
+		if len(gg) > 0 {
+			newGroup = gg[len(gg)-1]
+		}
+
+		if _, ok := AdminGroups[newGroup]; ok {
+			return true
+		}
+	}
+
+	return false
 }

@@ -80,10 +80,9 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 
 	if err != nil && !errors.IsNotFound(err) {
 		klog.Error("Listing clusters and found error: ", err)
+
 		return nil, err
 	}
-
-	klog.V(2).Infof("listed clusters count: %v, items: %v ", len(cllist.Items), cllist.Items)
 
 	for _, cl := range cllist.Items {
 		// the cluster will not be returned if it is in terminating process
@@ -92,8 +91,16 @@ func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha
 		}
 
 		cl.Namespace = cl.Name
+
+		// reduce memory consumption by cleaning up ManagedFields, Annotations, Finalizers for each managed clustger
+		cl.DeepCopy().SetManagedFields(nil)
+		cl.DeepCopy().SetAnnotations(nil)
+		cl.DeepCopy().SetFinalizers(nil)
+
 		clmap[cl.Name] = cl.DeepCopy()
 	}
+
+	klog.Infof("listed clusters original count: %v", len(cllist.Items))
 
 	return clmap, nil
 }
