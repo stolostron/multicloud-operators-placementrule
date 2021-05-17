@@ -102,7 +102,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		// The manager started with cache that filters all other secrets so no predicate needed
 		err = c.Watch(
 			&source.Kind{Type: &v1.Secret{}},
-			&handler.EnqueueRequestForObject{})
+			&handler.EnqueueRequestForObject{},
+			utils.ManagedClusterSecretPredicateFunc)
 		if err != nil {
 			return err
 		}
@@ -602,8 +603,10 @@ func (r *ReconcileGitOpsCluster) CheckAndDisableInKlusterletAddonConfig(clusterN
 	if klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster {
 		if !checkOnly {
 			klog.Info("disabling klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster")
+
 			klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster = false
 			err = r.Update(context.TODO(), klusterletAddonConfig)
+
 			if err != nil {
 				time.Sleep(time.Second * 2)
 				err = r.Update(context.TODO(), klusterletAddonConfig)
@@ -615,6 +618,7 @@ func (r *ReconcileGitOpsCluster) CheckAndDisableInKlusterletAddonConfig(clusterN
 				return true, nil
 			}
 			klog.Info("successfully disabled klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster")
+
 			return true, nil
 		}
 
@@ -696,16 +700,20 @@ func (r *ReconcileGitOpsCluster) CreateMigrationGitOpsCluster(clusterNames map[s
 
 	err := r.Create(context.TODO(), newGitOpsClusterCR)
 
-	if err != nil {
-		klog.Error("failed to create migration GitOpsCluster CR. will try again. ", err.Error())
+	if err != nil && !k8errors.IsAlreadyExists(err) {
+		if k8errors.IsAlreadyExists(err) {
+			klog.Info("managed-cluster-secret-migration GitOpsCluster CR already exists. Skip migration.")
+		} else {
+			klog.Error("failed to create migration GitOpsCluster CR. will try again. ", err.Error())
 
-		time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 2)
 
-		err := r.Create(context.TODO(), newGitOpsClusterCR)
+			err := r.Create(context.TODO(), newGitOpsClusterCR)
 
-		if err != nil {
-			klog.Error("failed to create migration GitOpsCluster CR again. ", err.Error())
-			return err
+			if err != nil {
+				klog.Error("failed to create migration GitOpsCluster CR again. ", err.Error())
+				return err
+			}
 		}
 	}
 

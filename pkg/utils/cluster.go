@@ -192,6 +192,47 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 	},
 }
 
+// ManagedClusterSecretPredicateFunc defines predicate function for managed cluster secrets watch
+var ManagedClusterSecretPredicateFunc = predicate.Funcs{
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		_, isSecretInArgo := e.MetaNew.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace updated: %v/%v", e.MetaNew.GetNamespace(), e.MetaNew.GetName())
+
+			// No reconcile if the secret is in argo server namespae
+			return false
+		}
+
+		return true
+	},
+	CreateFunc: func(e event.CreateEvent) bool {
+		_, isSecretInArgo := e.Meta.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace created: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+
+			// No reconcile if the secret is in argo server namespae
+			return false
+		}
+
+		return true
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		_, isSecretInArgo := e.Meta.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace deleted: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+
+			return true
+		}
+
+		// No reconcile if the secret is deleted from managed cluster namespae. Let placement decision update
+		// trigger reconcile
+		return false
+	},
+}
+
 // ArgocdServerPredicateFunc defines predicate function for cluster related watch
 var ArgocdServerPredicateFunc = predicate.Funcs{
 	UpdateFunc: func(e event.UpdateEvent) bool {
