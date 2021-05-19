@@ -25,6 +25,7 @@ import (
 	"time"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	agentv1 "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis/agent/v1"
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
@@ -107,8 +108,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		if err != nil {
 			return err
 		}
-
-		// TODO: watch placement and placementdecision changes
 	}
 
 	return nil
@@ -400,10 +399,57 @@ func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectRefere
 		return nil, errInvalidPlacementRef
 	}
 
-	// TODO: Find the placementdecision with placementref.Name and placementref.Namespace
-	//       and get the list of managed clusters
+	placement := &clusterv1alpha1.Placement{}
+	err := r.Get(context.TODO(), types.NamespacedName{Namespace: placementref.Namespace, Name: placementref.Name}, placement)
 
-	return []string{"cluster1"}, nil
+	if err != nil {
+		klog.Error("failed to get placement. err: ", err.Error())
+		return nil, err
+	}
+
+	klog.Infof("looking for placement decisions for placement %s", placementref.Name)
+
+	placementDecisions := &clusterv1alpha1.PlacementDecisionList{}
+
+	listopts := &client.ListOptions{}
+
+	secretSelector := &metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"placement.open-cluster-management.io": placementref.Name,
+		},
+	}
+
+	placementDecisionSelectionLabel, err := utils.ConvertLabels(secretSelector)
+	if err != nil {
+		klog.Error("Failed to convert placement decision selector, err:", err)
+		return nil, err
+	}
+
+	listopts.LabelSelector = placementDecisionSelectionLabel
+	err = r.List(context.TODO(), placementDecisions, listopts)
+
+	if err != nil {
+		klog.Error("Failed to list placement decisions, err:", err)
+		return nil, err
+	}
+
+	if len(placementDecisions.Items) < 1 {
+		klog.Info("no placement decision found for placement: " + placementref.Name)
+		return nil, errors.New("no placement decision found for placement: " + placementref.Name)
+	}
+
+	clusters := make([]string, 0)
+
+	for _, placementdecision := range placementDecisions.Items {
+		klog.Info("getting cluster names from placement decision " + placementdecision.Name)
+		clusterDecisions := placementdecision.Status.Decisions
+		for _, clusterDecision := range clusterDecisions {
+			klog.Info("cluster name: " + clusterDecision.ClusterName)
+			clusters = append(clusters, clusterDecision.ClusterName)
+		}
+	}
+
+	return clusters, nil
 }
 
 // AddManagedClustersToArgo copies a managed cluster secret from the managed cluster namespace to ArgoCD namespace
