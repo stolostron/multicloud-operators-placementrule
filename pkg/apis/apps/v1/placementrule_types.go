@@ -132,7 +132,7 @@ type PlacementRule struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PlacementRuleSpec   `json:"spec,omitempty"`
+	Spec   PlacementRuleSpec   `json:"spec"`
 	Status PlacementRuleStatus `json:"status,omitempty"`
 }
 
