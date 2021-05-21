@@ -15,7 +15,6 @@
 package gitopscluster
 
 import (
-	"fmt"
 	stdlog "log"
 	"os"
 	"path/filepath"
@@ -24,6 +23,7 @@ import (
 
 	"github.com/onsi/gomega"
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	endpointapis "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis"
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -45,6 +45,7 @@ func TestMain(m *testing.M) {
 
 	endpointapis.AddToScheme(scheme.Scheme)
 	spokeClusterV1.AddToScheme(scheme.Scheme)
+	clusterv1alpha1.AddToScheme(scheme.Scheme)
 
 	gitopsclusterV1alpha1.AddToScheme(scheme.Scheme)
 
@@ -62,7 +63,7 @@ func TestMain(m *testing.M) {
 
 // SetupTestReconcile returns a reconcile.Reconcile implementation that delegates to inner and
 // writes the request to requests after Reconcile is finished.
-func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan reconcile.Request) {
+/*func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan reconcile.Request) {
 	requests := make(chan reconcile.Request)
 	fn := reconcile.Func(func(req reconcile.Request) (reconcile.Result, error) {
 		result, err := inner.Reconcile(req)
@@ -73,6 +74,16 @@ func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan 
 	})
 
 	return fn, requests
+}*/
+func SetupTestReconcile(inner reconcile.Reconciler) reconcile.Reconciler {
+	//requests := make(chan reconcile.Request)
+	fn := reconcile.Func(func(req reconcile.Request) (reconcile.Result, error) {
+		result, err := inner.Reconcile(req)
+
+		return result, err
+	})
+
+	return fn
 }
 
 // StartTestManager adds recFn

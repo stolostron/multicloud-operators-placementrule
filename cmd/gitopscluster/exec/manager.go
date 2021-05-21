@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/IBM/controller-filtered-cache/filteredcache"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	endpointapis "github.com/open-cluster-management/klusterlet-addon-controller/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
 	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
@@ -87,6 +88,11 @@ func RunManager() {
 	}
 
 	if err := endpointapis.AddToScheme(mgr.GetScheme()); err != nil {
+		klog.Error(err, "")
+		os.Exit(1)
+	}
+
+	if err := clusterv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		klog.Error(err, "")
 		os.Exit(1)
 	}

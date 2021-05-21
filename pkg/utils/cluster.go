@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -80,6 +81,15 @@ var GitOpsClusterPredicateFunc = predicate.Funcs{
 		newGitOpsCluster := e.ObjectNew.(*gitopsclusterV1alpha1.GitOpsCluster)
 
 		return !reflect.DeepEqual(oldGitOpsCluster.Spec, newGitOpsCluster.Spec)
+	},
+}
+
+var PlacementDecisionPredicateFunc = predicate.Funcs{
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		oldDecision := e.ObjectOld.(*clusterv1alpha1.PlacementDecision)
+		newDecision := e.ObjectNew.(*clusterv1alpha1.PlacementDecision)
+
+		return !reflect.DeepEqual(oldDecision.Status, newDecision.Status)
 	},
 }
 
