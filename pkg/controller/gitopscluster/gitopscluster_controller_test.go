@@ -589,7 +589,9 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 
 	time.Sleep(time.Second * 3)
 	placementDecision_afterupdate4 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: placementDecision4.Namespace, Name: placementDecision4.Name}, placementDecision_afterupdate4)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: placementDecision4.Namespace,
+			Name: placementDecision4.Name}, placementDecision_afterupdate4)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(placementDecision_afterupdate4.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
