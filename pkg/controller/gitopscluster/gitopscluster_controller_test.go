@@ -319,6 +319,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision1)).NotTo(gomega.HaveOccurred())
 
 	time.Sleep(time.Second * 3)
+
 	placementDecision_afterupdate := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
 		types.NamespacedName{Namespace: placementDecision1.Namespace, Name: placementDecision1.Name},
@@ -398,12 +399,12 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 
 	time.Sleep(time.Second * 3)
 
-	placementDecision_afterupdate2 := &clusterv1alpha1.PlacementDecision{}
+	placementDecisionAfterupdate2 := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
 		types.NamespacedName{Namespace: placementDecision2.Namespace, Name: placementDecision2.Name},
-		placementDecision_afterupdate2)).NotTo(gomega.HaveOccurred())
+		placementDecisionAfterupdate2)).NotTo(gomega.HaveOccurred())
 
-	g.Expect(placementDecision_afterupdate2.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
+	g.Expect(placementDecisionAfterupdate2.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
 	// Create managed cluster namespaces
 	c.Create(context.TODO(), managedClusterNamespace1)
@@ -475,12 +476,13 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision3)).NotTo(gomega.HaveOccurred())
 
 	time.Sleep(time.Second * 3)
-	placementDecision_afterupdate3 := &clusterv1alpha1.PlacementDecision{}
+
+	placementDecisionAfterupdate3 := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
 		types.NamespacedName{Namespace: placementDecision3.Namespace, Name: placementDecision3.Name},
-		placementDecision_afterupdate3)).NotTo(gomega.HaveOccurred())
+		placementDecisionAfterupdate3)).NotTo(gomega.HaveOccurred())
 
-	g.Expect(placementDecision_afterupdate3.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
+	g.Expect(placementDecisionAfterupdate3.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
 	// Managed cluster namespace
 	c.Create(context.TODO(), managedClusterNamespace1)
