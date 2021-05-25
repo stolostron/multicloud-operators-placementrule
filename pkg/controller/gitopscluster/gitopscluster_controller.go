@@ -646,14 +646,19 @@ func (r *ReconcileGitOpsCluster) CheckAndDisableInKlusterletAddonConfig(clusterN
 
 			if err != nil {
 				time.Sleep(time.Second * 2)
+
 				err = r.Update(context.TODO(), klusterletAddonConfig)
+
 				if err != nil {
 					klog.Errorf("failed to disable ApplicationManagerConfig in klusterletAddonConfig %s, error: %v", klusterletAddonConfigKey, err.Error())
 					return false, err
 				}
+
 				klog.Info("successfully disabled klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster")
+
 				return true, nil
 			}
+
 			klog.Info("successfully disabled klusterletAddonConfig.Spec.ApplicationManagerConfig.ArgoCDCluster")
 
 			return true, nil

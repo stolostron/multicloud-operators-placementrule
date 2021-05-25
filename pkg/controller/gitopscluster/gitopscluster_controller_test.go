@@ -16,7 +16,6 @@ package gitopscluster
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -151,21 +150,9 @@ var (
 		},
 	}
 
-	testNamespace2 = &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test2",
-		},
-	}
-
 	managedClusterNamespace1 = &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cluster1",
-		},
-	}
-
-	managedClusterNamespace2 = &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "cluster2",
 		},
 	}
 
@@ -205,22 +192,6 @@ var (
 	gitOpsClusterSecret1Key = types.NamespacedName{
 		Name:      "cluster1-cluster-secret",
 		Namespace: "argocd1",
-	}
-
-	gitOpsClusterSecret1 = &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cluster1-cluster-secret",
-			Namespace: "argocd1",
-			Labels: map[string]string{
-				"apps.open-cluster-management.io/acm-cluster": "true",
-				"argocd.argoproj.io/secret-type":              "cluster",
-			},
-		},
-		StringData: map[string]string{
-			"name":   "cluster1",
-			"server": "https://api.cluster1.com:6443",
-			"config": "test-bearer-token-1",
-		},
 	}
 
 	gitOpsClusterSecret2Key = types.NamespacedName{
@@ -338,7 +309,9 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	// Update placement decision status
 	placementDecision1 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: test1PlDc.Namespace, Name: test1PlDc.Name}, placementDecision1)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: test1PlDc.Namespace, Name: test1PlDc.Name},
+		placementDecision1)).NotTo(gomega.HaveOccurred())
 
 	newPlacementDecision1 := placementDecision1.DeepCopy()
 	newPlacementDecision1.Status = *placementDecisionStatus
@@ -347,18 +320,22 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	time.Sleep(time.Second * 3)
 	placementDecision_afterupdate := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: placementDecision1.Namespace, Name: placementDecision1.Name}, placementDecision_afterupdate)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: placementDecision1.Namespace, Name: placementDecision1.Name},
+		placementDecision_afterupdate)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(placementDecision_afterupdate.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
 	// Managed cluster namespace
 	c.Create(context.TODO(), managedClusterNamespace1)
 	g.Expect(c.Create(context.TODO(), managedClusterSecret1.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), managedClusterSecret1)
 
 	// Create Argo namespace and fake argo server pod
 	c.Create(context.TODO(), argocdServerNamespace1)
 	g.Expect(c.Create(context.TODO(), argoServerPod.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), argoServerPod)
 
 	// Create GitOpsCluster CR
@@ -370,6 +347,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 		Name:       test1Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), goc)
 
 	// Test that the managed cluster's secret is created in the Argo namespace
@@ -399,15 +377,19 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 
 	// Create placement
 	g.Expect(c.Create(context.TODO(), test2Pl.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), test2Pl)
 
 	// Create placement decision
 	g.Expect(c.Create(context.TODO(), test2PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), test2PlDc)
 
 	// Update placement decision status
 	placementDecision2 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: test2PlDc.Namespace, Name: test2PlDc.Name}, placementDecision2)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: test2PlDc.Namespace, Name: test2PlDc.Name},
+		placementDecision2)).NotTo(gomega.HaveOccurred())
 
 	newPlacementDecision2 := placementDecision2.DeepCopy()
 	newPlacementDecision2.Status = *placementDecisionStatus
@@ -415,14 +397,18 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision2)).NotTo(gomega.HaveOccurred())
 
 	time.Sleep(time.Second * 3)
+
 	placementDecision_afterupdate2 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: placementDecision2.Namespace, Name: placementDecision2.Name}, placementDecision_afterupdate2)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: placementDecision2.Namespace, Name: placementDecision2.Name},
+		placementDecision_afterupdate2)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(placementDecision_afterupdate2.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
 	// Create managed cluster namespaces
 	c.Create(context.TODO(), managedClusterNamespace1)
 	g.Expect(c.Create(context.TODO(), managedClusterSecret1.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), managedClusterSecret1)
 
 	// Create invalid Argo namespaces where there is no argo server pod
@@ -438,6 +424,7 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 		Name:       test2Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), goc)
 
 	// Test that the managed cluster's secret is not created in argocd2
@@ -468,15 +455,19 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 
 	// Create placement
 	g.Expect(c.Create(context.TODO(), test3Pl.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), test3Pl)
 
 	// Create placement decision
 	g.Expect(c.Create(context.TODO(), test3PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), test3PlDc)
 
 	// Update placement decision status
 	placementDecision3 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: test3PlDc.Namespace, Name: test3PlDc.Name}, placementDecision3)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: test3PlDc.Namespace, Name: test3PlDc.Name},
+		placementDecision3)).NotTo(gomega.HaveOccurred())
 
 	newPlacementDecision3 := placementDecision3.DeepCopy()
 	newPlacementDecision3.Status = *placementDecisionStatus
@@ -485,18 +476,22 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 
 	time.Sleep(time.Second * 3)
 	placementDecision_afterupdate3 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: placementDecision3.Namespace, Name: placementDecision3.Name}, placementDecision_afterupdate3)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: placementDecision3.Namespace, Name: placementDecision3.Name},
+		placementDecision_afterupdate3)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(placementDecision_afterupdate3.Status.Decisions[0].ClusterName).To(gomega.Equal("cluster1"))
 
 	// Managed cluster namespace
 	c.Create(context.TODO(), managedClusterNamespace1)
 	g.Expect(c.Create(context.TODO(), managedClusterSecret1.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), managedClusterSecret1)
 
 	// Create Openshift-gitops namespace
 	c.Create(context.TODO(), gitopsServerNamespace1)
 	g.Expect(c.Create(context.TODO(), openshiftGitopsServerPod)).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), openshiftGitopsServerPod)
 
 	// Create GitOpsCluster CR
@@ -510,6 +505,7 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 		Name:       test3Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), goc)
 
 	// Test that the managed cluster's secret is created in the Argo namespace
@@ -518,6 +514,7 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 
 func expectedSecretCreated(c client.Client, expectedSecretKey types.NamespacedName) bool {
 	timeout := 0
+
 	for {
 		secret := &corev1.Secret{}
 		err := c.Get(context.TODO(), expectedSecretKey, secret)
@@ -567,7 +564,9 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 
 	// Update placement decision status
 	placementDecision4 := &clusterv1alpha1.PlacementDecision{}
-	g.Expect(c.Get(context.TODO(), types.NamespacedName{Namespace: test4PlDc.Namespace, Name: test4PlDc.Name}, placementDecision4)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Get(context.TODO(),
+		types.NamespacedName{Namespace: test4PlDc.Namespace, Name: test4PlDc.Name},
+		placementDecision4)).NotTo(gomega.HaveOccurred())
 
 	newPlacementDecision4 := placementDecision4.DeepCopy()
 	newPlacementDecision4.Status = *placementDecisionStatus
@@ -623,7 +622,6 @@ func checkOrphanSecretDeleted(c client.Client, expectedSecretKey types.Namespace
 	timeout := 0
 
 	for {
-		fmt.Println("checking if orphan secret gone " + expectedSecretKey.String())
 		secret := &corev1.Secret{}
 		err := c.Get(context.TODO(), expectedSecretKey, secret)
 
