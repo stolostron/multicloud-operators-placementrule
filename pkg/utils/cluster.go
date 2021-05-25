@@ -85,9 +85,31 @@ var GitOpsClusterPredicateFunc = predicate.Funcs{
 }
 
 var PlacementDecisionPredicateFunc = predicate.Funcs{
+	CreateFunc: func(e event.CreateEvent) bool {
+		decision, ok := e.Object.(*clusterv1alpha1.PlacementDecision)
+
+		if !ok {
+			return false
+		}
+
+		klog.Infof("placement decision created, %v/%v", decision.Namespace, decision.Name)
+		return true
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		decision, ok := e.Object.(*clusterv1alpha1.PlacementDecision)
+
+		if !ok {
+			return false
+		}
+
+		klog.Infof("placement decision deleted, %v/%v", decision.Namespace, decision.Name)
+		return true
+	},
 	UpdateFunc: func(e event.UpdateEvent) bool {
 		oldDecision := e.ObjectOld.(*clusterv1alpha1.PlacementDecision)
 		newDecision := e.ObjectNew.(*clusterv1alpha1.PlacementDecision)
+
+		klog.Infof("placement decision updated, %v/%v", newDecision.Namespace, newDecision.Name)
 
 		return !reflect.DeepEqual(oldDecision.Status, newDecision.Status)
 	},

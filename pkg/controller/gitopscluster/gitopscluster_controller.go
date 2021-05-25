@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -81,6 +82,45 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return dsRS
 }
 
+type placementDecisionMapper struct {
+	client.Client
+}
+
+func (mapper *placementDecisionMapper) Map(obj handler.MapObject) []reconcile.Request {
+	var requests []reconcile.Request
+
+	gitOpsClusterList := &gitopsclusterV1alpha1.GitOpsClusterList{}
+	listopts := &client.ListOptions{}
+	err := mapper.List(context.TODO(), gitOpsClusterList, listopts)
+
+	if err != nil {
+		klog.Error("failed to list GitOpsClusters, error:", err)
+	}
+
+	labels := obj.Meta.GetLabels()
+
+	// if placementDecision is created/updated/deleted, its relative GitOpsCluster should be reconciled.
+	for _, gitOpsCluster := range gitOpsClusterList.Items {
+		if strings.EqualFold(gitOpsCluster.Spec.PlacementRef.Name, labels["cluster.open-cluster-management.io/placement"]) &&
+			strings.EqualFold(gitOpsCluster.Spec.PlacementRef.Namespace, obj.Meta.GetNamespace()) {
+			klog.Infof("Placement decision %s/%s affects GitOpsCluster %s/%s",
+				obj.Meta.GetNamespace(),
+				obj.Meta.GetName(),
+				gitOpsCluster.Namespace,
+				gitOpsCluster.Name)
+
+			requests = append(requests, reconcile.Request{NamespacedName: types.NamespacedName{Namespace: gitOpsCluster.Namespace, Name: gitOpsCluster.Name}})
+
+			// just one GitOpsCluster is enough. The reconcile will process all GitOpsClusters
+			break
+		}
+	}
+
+	klog.Info("Out placement decision mapper with requests:", requests)
+
+	return requests
+}
+
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
@@ -112,7 +152,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		// Watch cluster list changes in placement decision
 		err = c.Watch(
 			&source.Kind{Type: &clusterv1alpha1.PlacementDecision{}},
-			&handler.EnqueueRequestForObject{},
+			&handler.EnqueueRequestsFromMapFunc{ToRequests: &placementDecisionMapper{mgr.GetClient()}},
 			utils.PlacementDecisionPredicateFunc)
 		if err != nil {
 			return err
