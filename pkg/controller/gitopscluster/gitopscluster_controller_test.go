@@ -187,11 +187,6 @@ var (
 		},
 	}
 
-	managedClusterSecret1Key = types.NamespacedName{
-		Name:      "cluster1-cluster-secret",
-		Namespace: "cluster1",
-	}
-
 	managedClusterSecret1 = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cluster1-cluster-secret",
@@ -247,11 +242,6 @@ var (
 			"server": "https://api.cluster1.com:6443",
 			"config": "test-bearer-token-1",
 		},
-	}
-
-	gitOpsClusterKey = types.NamespacedName{
-		Name:      "git-ops-cluster-1",
-		Namespace: test1Ns.Name,
 	}
 
 	gitOpsCluster = &gitopsclusterV1alpha1.GitOpsCluster{
@@ -529,15 +519,12 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 func expectedSecretCreated(c client.Client, expectedSecretKey types.NamespacedName) bool {
 	timeout := 0
 	for {
-		fmt.Println("checking secret " + expectedSecretKey.String())
 		secret := &corev1.Secret{}
 		err := c.Get(context.TODO(), expectedSecretKey, secret)
 
 		if err == nil {
-			fmt.Println("FOUND")
 			return true
 		}
-		fmt.Println("NOT FOUND")
 
 		if timeout > 30 {
 			return false
@@ -588,6 +575,7 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision4)).NotTo(gomega.HaveOccurred())
 
 	time.Sleep(time.Second * 3)
+
 	placementDecision_afterupdate4 := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
 		types.NamespacedName{Namespace: placementDecision4.Namespace,
@@ -598,17 +586,20 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	// Managed cluster namespace
 	c.Create(context.TODO(), managedClusterNamespace1)
 	g.Expect(c.Create(context.TODO(), managedClusterSecret1.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), managedClusterSecret1)
 
 	// Create Argo namespace
 	c.Create(context.TODO(), argocdServerNamespace1)
 	g.Expect(c.Create(context.TODO(), argoServerPod.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), argoServerPod)
 
 	// Create invalid Argo namespaces where there is no argo server pod
 	// And create a cluster secret to simulate an orphan cluster secret
 	c.Create(context.TODO(), argocdServerNamespace2)
 	g.Expect(c.Create(context.TODO(), gitOpsClusterSecret2.DeepCopy())).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), gitOpsClusterSecret2)
 
 	// Create GitOpsCluster CR
@@ -621,6 +612,7 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 		Name:       test4Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
+
 	defer c.Delete(context.TODO(), goc)
 
 	// Test that the orphan managed cluster's secret is deleted from the Argo namespace
@@ -629,6 +621,7 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 
 func checkOrphanSecretDeleted(c client.Client, expectedSecretKey types.NamespacedName) bool {
 	timeout := 0
+
 	for {
 		fmt.Println("checking if orphan secret gone " + expectedSecretKey.String())
 		secret := &corev1.Secret{}
@@ -647,154 +640,3 @@ func checkOrphanSecretDeleted(c client.Client, expectedSecretKey types.Namespace
 		timeout += 3
 	}
 }
-
-/*
-func TestGetAllManagedClusterSecretsInArgo(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
-	c = mgr.GetClient()
-
-	r := &ReconcileGitOpsCluster{
-		Client:     mgr.GetClient(),
-		scheme:     mgr.GetScheme(),
-		authClient: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		lock:       sync.Mutex{}}
-
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
-
-	defer func() {
-		close(stopMgr)
-		mgrStopped.Wait()
-	}()
-
-	// No managed cluster secret yet
-	secretList, err := r.GetAllManagedClusterSecretsInArgo()
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(secretList.Items)).To(gomega.Equal(0))
-
-	// Create one cluster secret that is not for Argo
-	c.Create(context.TODO(), managedClusterNamespace1)
-	c.Create(context.TODO(), argocdServerNamespace1)
-
-	//g.Expect(c.Create(context.TODO(), managedClusterNamespace1)).NotTo(gomega.HaveOccurred())
-	//defer c.Delete(context.TODO(), managedClusterNamespace1)
-
-	g.Expect(c.Create(context.TODO(), managedClusterSecret1)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), managedClusterSecret1)
-
-	secretList, err = r.GetAllManagedClusterSecretsInArgo()
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(secretList.Items)).To(gomega.Equal(0))
-
-	// Create one cluster secret in Argo
-	//g.Expect(c.Create(context.TODO(), argocdServerNamespace1)).NotTo(gomega.HaveOccurred())
-	//defer c.Delete(context.TODO(), argocdServerNamespace1)
-
-	g.Expect(c.Create(context.TODO(), gitOpsClusterSecret1)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), gitOpsClusterSecret1)
-
-	secretList, err = r.GetAllManagedClusterSecretsInArgo()
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(secretList.Items[0].Name).To(gomega.Equal("cluster1-cluster-secret"))
-
-	// Give it some time to finish all deferred deletes
-	time.Sleep(10 * time.Second)
-}
-
-func TestAddManagedClustersToArgo(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
-	c = mgr.GetClient()
-
-	r := &ReconcileGitOpsCluster{
-		Client:     mgr.GetClient(),
-		scheme:     mgr.GetScheme(),
-		authClient: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		lock:       sync.Mutex{}}
-
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
-
-	defer func() {
-		close(stopMgr)
-		mgrStopped.Wait()
-	}()
-
-	cleanupResources()
-
-	orphanGitOpsClusterSecretList := map[types.NamespacedName]string{}
-
-	// Create one cluster secret for Argo
-	c.Create(context.TODO(), argocdServerNamespace1)
-	c.Create(context.TODO(), managedClusterNamespace1)
-	c.Create(context.TODO(), argocdServerNamespace2)
-
-	//g.Expect(c.Create(context.TODO(), argocdServerNamespace1)).NotTo(gomega.HaveOccurred())
-	//defer c.Delete(context.TODO(), argocdServerNamespace1)
-
-	//g.Expect(c.Create(context.TODO(), managedClusterNamespace1)).NotTo(gomega.HaveOccurred())
-	//defer c.Delete(context.TODO(), managedClusterNamespace1)
-
-	g.Expect(c.Create(context.TODO(), managedClusterSecret1)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), managedClusterSecret1)
-
-	// This secret simulates an orphan GitOps managed cluster secret that needs to be removed.
-	//g.Expect(c.Create(context.TODO(), argocdServerNamespace2)).NotTo(gomega.HaveOccurred())
-	//defer c.Delete(context.TODO(), argocdServerNamespace2)
-
-	g.Expect(c.Create(context.TODO(), gitOpsClusterSecret2)).NotTo(gomega.HaveOccurred())
-	defer c.Delete(context.TODO(), gitOpsClusterSecret2)
-
-	secretList, err := r.GetAllManagedClusterSecretsInArgo()
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
-	for _, secret := range secretList.Items {
-		orphanGitOpsClusterSecretList[types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}] = secret.Namespace + "/" + secret.Name
-	}
-
-	// Initially the orphan secret list starts with all GitOps managed cluster secrets
-	g.Expect(len(orphanGitOpsClusterSecretList)).To(gomega.Equal(1))
-
-	// Test if the managed cluster secret from namespace cluster1 gets copied and created into Argo namespace argocd1
-	g.Expect(r.AddManagedClustersToArgo(argocdServerNamespace1.Name, []string{"cluster1"}, orphanGitOpsClusterSecretList)).NotTo(gomega.HaveOccurred())
-
-	// Give it some time to finish creating the secret
-	time.Sleep(3 * time.Second)
-
-	expectedGitOpsClusterSecret1 := &corev1.Secret{}
-	g.Expect(c.Get(context.TODO(), gitOpsClusterSecret1Key, expectedGitOpsClusterSecret1)).NotTo(gomega.HaveOccurred())
-
-	// Since gitOpsClusterSecret2 is not generated by r.AddManagedClustersToArgo, it should remain in orphanGitOpsClusterSecretList.
-	g.Expect(len(orphanGitOpsClusterSecretList)).To(gomega.Equal(1))
-
-	defer c.Delete(context.TODO(), expectedGitOpsClusterSecret1)
-
-	// Test if the managed cluster secret from namespace cluster1 gets copied and created into Argo namespace argocd1
-	g.Expect(r.AddManagedClustersToArgo(argocdServerNamespace2.Name, []string{"cluster1"}, orphanGitOpsClusterSecretList)).NotTo(gomega.HaveOccurred())
-
-	// Give it some time to finish creating the secret
-	time.Sleep(3 * time.Second)
-
-	expectedGitOpsClusterSecret2 := &corev1.Secret{}
-	g.Expect(c.Get(context.TODO(), gitOpsClusterSecret1Key, expectedGitOpsClusterSecret2)).NotTo(gomega.HaveOccurred())
-
-	// Since gitOpsClusterSecret2 is now generated by r.AddManagedClustersToArgo, it should be removed from orphanGitOpsClusterSecretList.
-	g.Expect(len(orphanGitOpsClusterSecretList)).To(gomega.Equal(0))
-
-}
-
-func cleanupResources() {
-	argocdServerNamespace1.ResourceVersion = ""
-	argocdServerNamespace2.ResourceVersion = ""
-	managedClusterNamespace1.ResourceVersion = ""
-	managedClusterNamespace2.ResourceVersion = ""
-	managedClusterSecret1.ResourceVersion = ""
-	gitOpsClusterSecret2.ResourceVersion = ""
-	gitOpsClusterSecret1.ResourceVersion = ""
-}
-*/
