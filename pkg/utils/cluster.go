@@ -131,21 +131,20 @@ var AcmClusterSecretPredicateFunc = predicate.Funcs{
 		oldSecretType, ok := e.MetaOld.GetLabels()[ACMClusterSecretLabel]
 		newSecretType, nok := e.MetaNew.GetLabels()[ACMClusterSecretLabel]
 
-		if (ok && oldSecretType == "acm-cluster") || (nok && newSecretType == "acm-cluster") {
-			if !reflect.DeepEqual(oldSecret.Data, newSecret.Data) {
-				klog.Infof("Managed cluster secret updated, %v/%v", newSecret.Namespace, newSecret.Name)
-				return true
-			}
+		if ok && oldSecretType == "acm-cluster" {
+			klog.Infof("Update a old ACM cluster secret, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
+			return true
 		}
 
+		if nok && newSecretType == "acm-cluster" {
+			klog.Infof("Update a new ACM cluster secret, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
+			return true
+		}
+
+		klog.Infof("Not a ACM cluster secret update, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
 		return false
 	},
 	CreateFunc: func(e event.CreateEvent) bool {
-		secret, ok := e.Object.(*v1.Secret)
-		if !ok {
-			return false
-		}
-
 		SecretType, ok := e.Meta.GetLabels()[ACMClusterSecretLabel]
 
 		if !ok {
@@ -154,16 +153,7 @@ var AcmClusterSecretPredicateFunc = predicate.Funcs{
 			return false
 		}
 
-		clusterName, ok := e.Meta.GetLabels()[ACMClusterNameLabel]
-
-		if !ok {
-			return false
-		} else if clusterName != secret.GetNamespace() {
-			// If the managed cluster secret is created somewhere else other than the managed cluster namespace, ignore
-			return false
-		}
-
-		klog.Infof("Managed cluster secret created: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Create a ACM cluster secret: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 	DeleteFunc: func(e event.DeleteEvent) bool {
@@ -175,7 +165,7 @@ var AcmClusterSecretPredicateFunc = predicate.Funcs{
 			return false
 		}
 
-		klog.Infof("Managed cluster secret deleted: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Delete a ACM cluster secret: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 }
@@ -183,6 +173,11 @@ var AcmClusterSecretPredicateFunc = predicate.Funcs{
 // ArgocdClusterSecretPredicateFunc defines predicate function for ArgoCD cluster secrets watch
 var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 	UpdateFunc: func(e event.UpdateEvent) bool {
+		oldSecret, ok := e.ObjectOld.(*v1.Secret)
+		if !ok {
+			return false
+		}
+
 		newSecret, nok := e.ObjectNew.(*v1.Secret)
 		if !nok {
 			return false
@@ -191,11 +186,17 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 		oldSecretType, ok := e.MetaOld.GetLabels()[ArgocdClusterSecretLabel]
 		newSecretType, nok := e.MetaNew.GetLabels()[ArgocdClusterSecretLabel]
 
-		if (ok && oldSecretType == "true") || (nok && newSecretType == "true") {
-			klog.Infof("Managed cluster secret for ArgoCD updated: %v/%v", newSecret.Namespace, newSecret.Name)
+		if ok && oldSecretType == "true" {
+			klog.Infof("Update a old ArgoCD cluster secret, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
 			return true
 		}
 
+		if nok && newSecretType == "true" {
+			klog.Infof("Update a new Argocd cluster secret, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
+			return true
+		}
+
+		klog.Infof("Not a ArgoCD cluster secret update, old: %v/%v, new: %v/%v", oldSecret.Namespace, oldSecret.Name, newSecret.Namespace, newSecret.Name)
 		return false
 	},
 	CreateFunc: func(e event.CreateEvent) bool {
@@ -207,7 +208,7 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 			return false
 		}
 
-		klog.Infof("Managed cluster secret for ArgoCD created: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Create a ArgoCD cluster secret: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 	DeleteFunc: func(e event.DeleteEvent) bool {
@@ -219,7 +220,7 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 			return false
 		}
 
-		klog.Infof("Managed cluster secret for ArgoCD deleted: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+		klog.Infof("Delete a ArgoCD cluster secret: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
 		return true
 	},
 }

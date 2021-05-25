@@ -125,7 +125,7 @@ func TestPredicate(t *testing.T) {
 		Meta:   newSecret.GetObjectMeta(),
 	}
 	ret = instance.Create(createEvt)
-	g.Expect(ret).To(gomega.Equal(false))
+	g.Expect(ret).To(gomega.Equal(true))
 
 	updateEvt = event.UpdateEvent{
 		ObjectOld: oldSecret,
@@ -135,7 +135,7 @@ func TestPredicate(t *testing.T) {
 	}
 
 	ret = instance.Update(updateEvt)
-	g.Expect(ret).To(gomega.Equal(false))
+	g.Expect(ret).To(gomega.Equal(true))
 
 	delEvt := event.DeleteEvent{
 		Object: newSecret,
