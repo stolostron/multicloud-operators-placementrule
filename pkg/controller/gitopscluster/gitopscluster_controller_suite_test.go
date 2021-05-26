@@ -15,7 +15,6 @@
 package gitopscluster
 
 import (
-	"fmt"
 	stdlog "log"
 	"os"
 	"path/filepath"
@@ -43,10 +42,6 @@ func TestMain(m *testing.M) {
 			filepath.Join("..", "..", "..", "hack", "test", "crds"),
 		},
 	}
-
-	path, _ := os.Getwd()
-
-	fmt.Println("============= CURRENT DIRECTORY " + path)
 
 	endpointapis.AddToScheme(scheme.Scheme)
 	spokeClusterV1.AddToScheme(scheme.Scheme)
