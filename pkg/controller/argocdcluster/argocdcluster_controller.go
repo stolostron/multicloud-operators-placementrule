@@ -99,7 +99,7 @@ func (mapper *argocdSecretRuleMapper) Map(obj handler.MapObject) []reconcile.Req
 
 	acmClusterSecretKey := types.NamespacedName{
 		Name:      obj.Meta.GetName(),
-		Namespace: utils.GetACMClusterNamespace(obj.Meta.GetName())}
+		Namespace: utils.GetManagedClusterNamespace(obj.Meta.GetName())}
 
 	requests = append(requests, reconcile.Request{NamespacedName: acmClusterSecretKey})
 

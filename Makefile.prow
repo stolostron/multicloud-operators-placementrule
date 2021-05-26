@@ -37,6 +37,7 @@ export GOPACKAGES   = $(shell go list ./... | grep -v /manager | grep -v /bindat
 build:
 	@common/scripts/gobuild.sh build/_output/bin/$(IMG) ./cmd/manager
 	@common/scripts/gobuild.sh build/_output/bin/argocdcluster ./cmd/argocdcluster
+	@common/scripts/gobuild.sh build/_output/bin/gitopscluster ./cmd/gitopscluster
 
 .PHONY: lint
 

@@ -23,6 +23,8 @@ import (
 	"k8s.io/klog"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
+	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -33,6 +35,8 @@ const (
 	ACMClusterSecretLabel = "apps.open-cluster-management.io/secret-type"
 	// #nosec G101
 	ArgocdClusterSecretLabel = "apps.open-cluster-management.io/acm-cluster"
+	// #nosec G101
+	ACMClusterNameLabel = "apps.open-cluster-management.io/cluster-name"
 )
 
 // ClusterPredicateFunc defines predicate function for cluster related watch, main purpose is to ignore heartbeat without change
@@ -68,6 +72,46 @@ var ClusterPredicateFunc = predicate.Funcs{
 
 		klog.V(1).Info("Out Cluster Predicate Func ", oldcl.Name, " with false possitive")
 		return false
+	},
+}
+
+var GitOpsClusterPredicateFunc = predicate.Funcs{
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		oldGitOpsCluster := e.ObjectOld.(*gitopsclusterV1alpha1.GitOpsCluster)
+		newGitOpsCluster := e.ObjectNew.(*gitopsclusterV1alpha1.GitOpsCluster)
+
+		return !reflect.DeepEqual(oldGitOpsCluster.Spec, newGitOpsCluster.Spec)
+	},
+}
+
+var PlacementDecisionPredicateFunc = predicate.Funcs{
+	CreateFunc: func(e event.CreateEvent) bool {
+		decision, ok := e.Object.(*clusterv1alpha1.PlacementDecision)
+
+		if !ok {
+			return false
+		}
+
+		klog.Infof("placement decision created, %v/%v", decision.Namespace, decision.Name)
+		return true
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		decision, ok := e.Object.(*clusterv1alpha1.PlacementDecision)
+
+		if !ok {
+			return false
+		}
+
+		klog.Infof("placement decision deleted, %v/%v", decision.Namespace, decision.Name)
+		return true
+	},
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		oldDecision := e.ObjectOld.(*clusterv1alpha1.PlacementDecision)
+		newDecision := e.ObjectNew.(*clusterv1alpha1.PlacementDecision)
+
+		klog.Infof("placement decision updated, %v/%v", newDecision.Namespace, newDecision.Name)
+
+		return !reflect.DeepEqual(oldDecision.Status, newDecision.Status)
 	},
 }
 
@@ -181,6 +225,47 @@ var ArgocdClusterSecretPredicateFunc = predicate.Funcs{
 	},
 }
 
+// ManagedClusterSecretPredicateFunc defines predicate function for managed cluster secrets watch
+var ManagedClusterSecretPredicateFunc = predicate.Funcs{
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		_, isSecretInArgo := e.MetaNew.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace updated: %v/%v", e.MetaNew.GetNamespace(), e.MetaNew.GetName())
+
+			// No reconcile if the secret is in argo server namespae
+			return false
+		}
+
+		return true
+	},
+	CreateFunc: func(e event.CreateEvent) bool {
+		_, isSecretInArgo := e.Meta.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace created: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+
+			// No reconcile if the secret is in argo server namespae
+			return false
+		}
+
+		return true
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		_, isSecretInArgo := e.Meta.GetLabels()[ArgocdClusterSecretLabel]
+
+		if isSecretInArgo {
+			klog.Infof("Managed cluster secret in ArgoCD namespace deleted: %v/%v", e.Meta.GetNamespace(), e.Meta.GetName())
+
+			return true
+		}
+
+		// No reconcile if the secret is deleted from managed cluster namespae. Let placement decision update
+		// trigger reconcile
+		return false
+	},
+}
+
 // ArgocdServerPredicateFunc defines predicate function for cluster related watch
 var ArgocdServerPredicateFunc = predicate.Funcs{
 	UpdateFunc: func(e event.UpdateEvent) bool {
@@ -251,8 +336,8 @@ func Base64StringDecode(encodedStr string) (string, error) {
 	return string(decodedBytes), nil
 }
 
-// GetACMClusterNamespace return ACM secret namespace accoding to its secret name
-func GetACMClusterNamespace(secretName string) string {
+// GetManagedClusterNamespace return ACM secret namespace accoding to its secret name
+func GetManagedClusterNamespace(secretName string) string {
 	if secretName == "" {
 		return ""
 	}
@@ -261,7 +346,7 @@ func GetACMClusterNamespace(secretName string) string {
 		return strings.TrimSuffix(secretName, "-cluster-secret")
 	}
 
-	klog.Errorf("invalid ACM cluster secret name, secretName: %v", secretName)
+	klog.Errorf("invalid managed cluster secret name, secretName: %v", secretName)
 
 	return ""
 }

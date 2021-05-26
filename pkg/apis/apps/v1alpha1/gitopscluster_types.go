@@ -29,9 +29,9 @@ import (
 // GitOpsCluster is the Schema for the gitopsclusters API.
 type GitOpsCluster struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata"`
 
-	Spec   GitOpsClusterSpec   `json:"spec,omitempty"`
+	Spec   GitOpsClusterSpec   `json:"spec"`
 	Status GitOpsClusterStatus `json:"status,omitempty"`
 }
 
@@ -39,14 +39,14 @@ type GitOpsCluster struct {
 
 // GitOpsClusterSpec defines the desired state of GitOpsCluster.
 type GitOpsClusterSpec struct {
-	ArgoServer   ArgoServerSpec          `json:"ArgoServer,omitempty"`
-	PlacementRef *corev1.ObjectReference `json:"placementRef,omitempty"`
+	ArgoServer   ArgoServerSpec          `json:"argoServer"`
+	PlacementRef *corev1.ObjectReference `json:"placementRef"`
 }
 
 // ArgoServerSpec defines a argo server installed in a managed cluster.
 type ArgoServerSpec struct {
 	Cluster       string `json:"cluster,omitempty"`
-	ArgoNamespace string `json:"argoNamespace,omitempty"`
+	ArgoNamespace string `json:"argoNamespace"`
 }
 
 // +kubebuilder:object:root=true
