@@ -15,7 +15,6 @@ ENV OPERATOR=/usr/local/bin/multicluster-operators-placementrule \
 
 # install operator binary
 COPY --from=builder /go/src/github.com/open-cluster-management/multicluster-operators-placementrule/build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
-COPY --from=builder /go/src/github.com/open-cluster-management/multicluster-operators-placementrule/build/_output/bin/argocdcluster /usr/local/bin/argocdcluster
 COPY --from=builder /go/src/github.com/open-cluster-management/multicluster-operators-placementrule/build/_output/bin/gitopscluster /usr/local/bin/gitopscluster
 
 COPY build/bin /usr/local/bin

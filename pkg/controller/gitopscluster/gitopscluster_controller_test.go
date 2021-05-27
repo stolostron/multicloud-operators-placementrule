@@ -307,6 +307,8 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	g.Expect(c.Create(context.TODO(), test1PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), test1PlDc)
 
+	time.Sleep(time.Second * 3)
+
 	// Update placement decision status
 	placementDecision1 := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
@@ -386,6 +388,8 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 
 	defer c.Delete(context.TODO(), test2PlDc)
 
+	time.Sleep(time.Second * 3)
+
 	// Update placement decision status
 	placementDecision2 := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
@@ -463,6 +467,8 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 	g.Expect(c.Create(context.TODO(), test3PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
 
 	defer c.Delete(context.TODO(), test3PlDc)
+
+	time.Sleep(time.Second * 3)
 
 	// Update placement decision status
 	placementDecision3 := &clusterv1alpha1.PlacementDecision{}
@@ -563,6 +569,8 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	// Create placement decision
 	g.Expect(c.Create(context.TODO(), test4PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), test4PlDc)
+
+	time.Sleep(time.Second * 3)
 
 	// Update placement decision status
 	placementDecision4 := &clusterv1alpha1.PlacementDecision{}
