@@ -10,9 +10,6 @@ ENV OPERATOR=/usr/local/bin/multicluster-operators-placementrule \
 # install operator binary
 COPY build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
 
-# install argocdcluster controller binary
-COPY build/_output/bin/argocdcluster /usr/local/bin/argocdcluster
-
 # install gitopscluster controller binary
 COPY build/_output/bin/gitopscluster /usr/local/bin/gitopscluster
 
