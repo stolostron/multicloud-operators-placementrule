@@ -885,7 +885,7 @@ func (r *ReconcileGitOpsCluster) AddManagedClusterToSet(clusterNames []string) e
 				err := r.Update(context.TODO(), managedCluster)
 
 				if err != nil {
-					klog.Error("failed to update managed cluster %s err: %v", managedCluster.Name, err.Error())
+					klog.Errorf("failed to update managed cluster %s err: %s", managedCluster.Name, err.Error())
 					return err
 				}
 			}
