@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -53,6 +52,11 @@ type ReconcileGitOpsCluster struct {
 	scheme     *runtime.Scheme
 	lock       sync.Mutex
 }
+
+const (
+	MigrationName   = "open-cluster-management-app-migration"
+	ClusterSetLabel = "cluster.open-cluster-management.io/clusterset"
+)
 
 // Add creates a new argocd cluster Controller and adds it to the Manager with default RBAC.
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
@@ -579,6 +583,7 @@ func (r *ReconcileGitOpsCluster) CreateManagedClusterSecretInArgo(argoNamespace 
 	} else {
 		klog.Infof("updating managed cluster secret in argo namespace: %v/%v", argoNamespace, managedClusterSecret.Name)
 
+		newSecret.ResourceVersion = existingManagedClusterSecret.ResourceVersion
 		err := r.Update(context.TODO(), newSecret)
 
 		if err != nil {
@@ -623,6 +628,13 @@ func (r *ReconcileGitOpsCluster) MigrateManagedClusterSecrets(argoNamespace stri
 	if len(clustersToMigrate) > 0 {
 		// Create a placement rule with those managed clusters
 		klog.Infof("migrating secret for managed cluster: %v, ", clustersToMigrate)
+
+		// Create a cluster set and add clusters to the set for migration
+		err = r.CreateMigrationClusterSet(clustersToMigrate)
+
+		if err != nil {
+			return err
+		}
 
 		// Create a placement rule for migration
 		err = r.CreateMigrationPlacement(clustersToMigrate)
@@ -711,16 +723,12 @@ func (r *ReconcileGitOpsCluster) CheckAndDisableInKlusterletAddonConfig(clusterN
 }
 
 func (r *ReconcileGitOpsCluster) CreateMigrationPlacement(clusterNames []string) error {
-	namespace := os.Getenv("POD_NAMESPACE")
-
-	if namespace == "" {
-		return errors.New("environment variable POD_NAMESPACE is empty")
-	}
+	klog.Info("creating placement for migration")
 
 	migrationPlacement := &clusterv1alpha1.Placement{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "managed-cluster-secret-migration",
-			Namespace: namespace,
+			Name:      MigrationName,
+			Namespace: MigrationName,
 		},
 		Spec: clusterv1alpha1.PlacementSpec{
 			Predicates: []clusterv1alpha1.ClusterPredicate{
@@ -743,7 +751,7 @@ func (r *ReconcileGitOpsCluster) CreateMigrationPlacement(clusterNames []string)
 
 	err := r.Create(context.TODO(), migrationPlacement)
 
-	if err != nil {
+	if err != nil && !k8errors.IsAlreadyExists(err) {
 		klog.Error("failed to create migration placement CR. will try again. ", err.Error())
 
 		time.Sleep(time.Second * 2)
@@ -759,17 +767,141 @@ func (r *ReconcileGitOpsCluster) CreateMigrationPlacement(clusterNames []string)
 	return nil
 }
 
-func (r *ReconcileGitOpsCluster) CreateMigrationGitOpsCluster(argoNamespace string, clusterNames []string) error {
-	namespace := os.Getenv("POD_NAMESPACE")
-
-	if namespace == "" {
-		return errors.New("environment variable POD_NAMESPACE is empty")
+func (r *ReconcileGitOpsCluster) CreateMigrationClusterSet(clusterNames []string) error {
+	klog.Info("creating namespace for migration")
+	// Create migration namespace
+	migrationNamespace := &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: MigrationName,
+		},
 	}
 
+	err := r.Create(context.TODO(), migrationNamespace)
+
+	if err != nil && !k8errors.IsAlreadyExists(err) {
+		klog.Error("failed to create migration namespace. will try again. ", err.Error())
+
+		time.Sleep(time.Second * 2)
+
+		err := r.Create(context.TODO(), migrationNamespace)
+
+		if err != nil {
+			klog.Error("failed to create migration namespace again. ", err.Error())
+			return err
+		}
+	}
+
+	klog.Infof("namespace %s created for migration", migrationNamespace)
+
+	klog.Info("creating clusterset for migration")
+
+	// Create managedclusterset
+	migrationManagedClusterSet := &clusterv1alpha1.ManagedClusterSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: MigrationName,
+		},
+	}
+
+	err = r.Create(context.TODO(), migrationManagedClusterSet)
+
+	if err != nil && !k8errors.IsAlreadyExists(err) {
+		klog.Error("failed to create migration managedclusterset. will try again. ", err.Error())
+
+		time.Sleep(time.Second * 2)
+
+		err := r.Create(context.TODO(), migrationManagedClusterSet)
+
+		if err != nil {
+			klog.Error("failed to create migration managedclusterset again. ", err.Error())
+		}
+	}
+
+	klog.Infof("clusterset %s created for migration", MigrationName)
+
+	klog.Info("creating clustersetbinding for migration")
+
+	// Create managedclustersetbinding
+	migrationManagedClusterSetBinding := &clusterv1alpha1.ManagedClusterSetBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      MigrationName,
+			Namespace: MigrationName,
+		},
+		Spec: clusterv1alpha1.ManagedClusterSetBindingSpec{
+			ClusterSet: MigrationName,
+		},
+	}
+
+	err = r.Create(context.TODO(), migrationManagedClusterSetBinding)
+
+	if err != nil && !k8errors.IsAlreadyExists(err) {
+		klog.Error("failed to create migration managedclustersetbinding. will try again. ", err.Error())
+
+		time.Sleep(time.Second * 2)
+
+		err := r.Create(context.TODO(), migrationManagedClusterSetBinding)
+
+		if err != nil {
+			klog.Error("failed to create migration managedclustersetbinding again. ", err.Error())
+			return err
+		}
+	}
+
+	klog.Infof("clustersetbinding %s created for migration", MigrationName)
+
+	err = r.AddManagedClusterToSet(clusterNames)
+
+	if err != nil {
+		klog.Error("failed to add managed cluster to migration clusterset")
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReconcileGitOpsCluster) AddManagedClusterToSet(clusterNames []string) error {
+	for _, cluster := range clusterNames {
+		managedCluster := &spokeClusterV1.ManagedCluster{}
+
+		err := r.Get(context.TODO(), types.NamespacedName{Name: cluster}, managedCluster)
+
+		if err != nil {
+			klog.Errorf("failed to get managed cluster %s err: %v", cluster, err.Error())
+			return err
+		}
+
+		labels := managedCluster.GetLabels()
+
+		if labels[ClusterSetLabel] == "" {
+			klog.Infof("adding managed cluster %s to %s for migration", cluster, MigrationName)
+			labels[ClusterSetLabel] = MigrationName
+
+			err := r.Update(context.TODO(), managedCluster)
+
+			if err != nil {
+				klog.Errorf("failed to update managed cluster %s err: %v", managedCluster.Name, err.Error())
+
+				time.Sleep(time.Second * 2)
+
+				err := r.Update(context.TODO(), managedCluster)
+
+				if err != nil {
+					klog.Error("failed to update managed cluster %s err: %v", managedCluster.Name, err.Error())
+					return err
+				}
+			}
+		} else {
+			klog.Infof("managed cluster %s already belongs to clusterset %s. Skip migration.", cluster, labels[ClusterSetLabel])
+		}
+	}
+
+	return nil
+}
+
+func (r *ReconcileGitOpsCluster) CreateMigrationGitOpsCluster(argoNamespace string, clusterNames []string) error {
 	newGitOpsClusterCR := &gitopsclusterV1alpha1.GitOpsCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "managed-cluster-secret-migration",
-			Namespace: namespace,
+			Name:      MigrationName,
+			Namespace: MigrationName,
 		},
 		Spec: gitopsclusterV1alpha1.GitOpsClusterSpec{
 			ArgoServer: gitopsclusterV1alpha1.ArgoServerSpec{
@@ -779,28 +911,42 @@ func (r *ReconcileGitOpsCluster) CreateMigrationGitOpsCluster(argoNamespace stri
 			PlacementRef: &v1.ObjectReference{
 				Kind:       "Placement",
 				APIVersion: "cluster.open-cluster-management.io/v1alpha1",
-				Namespace:  namespace,
-				Name:       "managed-cluster-secret-migration",
+				Namespace:  MigrationName,
+				Name:       MigrationName,
 			},
 		},
 	}
 
 	err := r.Create(context.TODO(), newGitOpsClusterCR)
 
-	if err != nil && !k8errors.IsAlreadyExists(err) {
-		if k8errors.IsAlreadyExists(err) {
-			klog.Info("managed-cluster-secret-migration GitOpsCluster CR already exists. Skip migration.")
-		} else {
-			klog.Error("failed to create migration GitOpsCluster CR. will try again. ", err.Error())
+	if k8errors.IsAlreadyExists(err) {
+		existingGitOpsClusterCR := &gitopsclusterV1alpha1.GitOpsCluster{}
 
-			time.Sleep(time.Second * 2)
+		err = r.Get(context.TODO(), types.NamespacedName{Name: MigrationName, Namespace: MigrationName}, existingGitOpsClusterCR)
 
-			err := r.Create(context.TODO(), newGitOpsClusterCR)
+		if err != nil {
+			klog.Error("failed to get existing migration GitOpsCluster. ", err.Error())
+			return err
+		}
 
-			if err != nil {
-				klog.Error("failed to create migration GitOpsCluster CR again. ", err.Error())
-				return err
-			}
+		newGitOpsClusterCR.ResourceVersion = existingGitOpsClusterCR.ResourceVersion
+
+		err := r.Update(context.TODO(), newGitOpsClusterCR)
+
+		if err != nil {
+			klog.Error("failed to update migration GitOpsCluster. ", err.Error())
+			return err
+		}
+	} else if err != nil {
+		klog.Error("failed to create migration GitOpsCluster. will try again. ", err.Error())
+
+		time.Sleep(time.Second * 2)
+
+		err := r.Create(context.TODO(), newGitOpsClusterCR)
+
+		if err != nil {
+			klog.Error("failed to create migration GitOpsCluster again. ", err.Error())
+			return err
 		}
 	}
 
