@@ -199,6 +199,16 @@ var (
 		Namespace: "argocd2",
 	}
 
+	applicationSetConfigMapNew = types.NamespacedName{
+		Name:      configMapNameNew,
+		Namespace: "argocd1",
+	}
+
+	applicationSetConfigMapOld = types.NamespacedName{
+		Name:      configMapNameOld,
+		Namespace: "argocd1",
+	}
+
 	gitOpsClusterSecret2 = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cluster1-cluster-secret",
@@ -355,6 +365,10 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	// Test that the managed cluster's secret is created in the Argo namespace
 	g.Expect(expectedSecretCreated(c, gitOpsClusterSecret1Key)).To(gomega.BeTrue())
+
+	// Test that the ConfigMaps for ApplicationSets were created
+	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapNew))
+	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapOld))
 }
 
 func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
@@ -541,6 +555,26 @@ func expectedSecretCreated(c client.Client, expectedSecretKey types.NamespacedNa
 	}
 }
 
+func expectedConfigMapCreated(c client.Client, expectedConfigMap types.NamespacedName) bool {
+	timeout := 0
+
+	for {
+		configMap := &corev1.ConfigMap{}
+		err := c.Get(context.TODO(), expectedConfigMap, configMap)
+
+		if err == nil {
+			return true
+		}
+
+		if timeout > 30 {
+			return false
+		}
+
+		time.Sleep(time.Second * 3)
+
+		timeout += 3
+	}
+}
 func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
