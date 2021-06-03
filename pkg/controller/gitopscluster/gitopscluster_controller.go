@@ -469,7 +469,7 @@ func getConfigMapDuck(configMapName string, namespace string, apiVersion string,
 // to identify our two forms of placement
 func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string) error {
 	if namespace == "" {
-		return errors.New("No namespace provided")
+		return errors.New("no namespace provided")
 	}
 
 	// Create two configMaps, one for placementrules.apps and placementdecisions.cluster
@@ -479,18 +479,15 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string
 	}
 
 	for _, duckMap := range maps {
-
 		configMap := v1.ConfigMap{}
 
 		err := r.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: duckMap.Name}, &configMap)
 
 		if err != nil && strings.Contains(err.Error(), " not found") {
-
 			err = r.Create(context.Background(), &duckMap)
 			if err != nil {
 				return err
 			}
-
 		} else if err != nil {
 			return err
 		}
