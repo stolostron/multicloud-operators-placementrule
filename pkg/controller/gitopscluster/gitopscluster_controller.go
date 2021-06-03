@@ -64,7 +64,7 @@ var _ reconcile.Reconciler = &ReconcileGitOpsCluster{}
 
 var errInvalidPlacementRef = errors.New("invalid placement reference")
 
-var migrationDone = false
+var migrationDone = true
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
@@ -290,6 +290,12 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 		return 0, nil
 	}
 
+	// 1a. Add configMaps to be used by ArgoCD ApplicationSets
+	err := r.CreateApplicationSetConfigMaps(gitOpsCluster.Spec.ArgoServer.ArgoNamespace)
+	if err != nil {
+		klog.Warningf("ConfigMaps were not created: %v", err.Error())
+	}
+
 	// 2. Get the list of managed clusters
 	managedClusters, err := r.GetManagedClusters(*instance.Spec.PlacementRef)
 	// 2a. Get the placement decision
@@ -439,6 +445,55 @@ func (r *ReconcileGitOpsCluster) FindPodsWithLabelsAndNamespace(namespace string
 	}
 
 	return true
+}
+
+const configMapNameOld = "acm-placementrule"
+const configMapNameNew = "acm-placement"
+
+func getConfigMapDuck(configMapName string, namespace string, apiVersion string, kind string) v1.ConfigMap {
+	return v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configMapName,
+			Namespace: namespace,
+		},
+		Data: map[string]string{
+			"apiVerison":    apiVersion,
+			"kind":          kind,
+			"statusListkey": "decisions",
+			"matchKey":      "clusterName",
+		},
+	}
+}
+
+// ApplyApplicationSetConfigMaps creates the required configMap to allow ArgoCD ApplicationSet
+// to identify our two forms of placement
+func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string) error {
+	if namespace == "" {
+		return errors.New("no namespace provided")
+	}
+
+	// Create two configMaps, one for placementrules.apps and placementdecisions.cluster
+	maps := []v1.ConfigMap{
+		getConfigMapDuck(configMapNameOld, namespace, "apps.open-cluster-management.io/v1", "placementrules"),
+		getConfigMapDuck(configMapNameNew, namespace, "cluster.open-cluster-management.io/v1alpha1", "placementdecisions"),
+	}
+
+	for _, duckMap := range maps {
+		configMap := v1.ConfigMap{}
+
+		err := r.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: duckMap.Name}, &configMap)
+
+		if err != nil && strings.Contains(err.Error(), " not found") {
+			err = r.Create(context.Background(), &duckMap)
+			if err != nil {
+				return err
+			}
+		} else if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // GetManagedClusters retrieves managed cluster names from placement decision
