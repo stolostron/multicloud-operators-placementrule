@@ -353,10 +353,10 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	// Create GitOpsCluster CR
 	goc := gitOpsCluster.DeepCopy()
+	goc.Namespace = test1Ns.Name
 	goc.Spec.PlacementRef = &corev1.ObjectReference{
 		Kind:       "Placement",
 		APIVersion: "cluster.open-cluster-management.io/v1alpha1",
-		Namespace:  test1Ns.Name,
 		Name:       test1Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
@@ -439,7 +439,6 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 	goc.Spec.PlacementRef = &corev1.ObjectReference{
 		Kind:       "Placement",
 		APIVersion: "cluster.open-cluster-management.io/v1alpha1",
-		Namespace:  test2Ns.Name,
 		Name:       test2Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
@@ -523,7 +522,6 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 	goc.Spec.PlacementRef = &corev1.ObjectReference{
 		Kind:       "Placement",
 		APIVersion: "cluster.open-cluster-management.io/v1alpha1",
-		Namespace:  test3Ns.Name,
 		Name:       test3Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())
@@ -651,7 +649,6 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	goc.Spec.PlacementRef = &corev1.ObjectReference{
 		Kind:       "Placement",
 		APIVersion: "cluster.open-cluster-management.io/v1alpha1",
-		Namespace:  test4Ns.Name,
 		Name:       test4Pl.Name,
 	}
 	g.Expect(c.Create(context.TODO(), goc)).NotTo(gomega.HaveOccurred())

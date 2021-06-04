@@ -90,7 +90,7 @@ func (mapper *placementDecisionMapper) Map(obj handler.MapObject) []reconcile.Re
 	var requests []reconcile.Request
 
 	gitOpsClusterList := &gitopsclusterV1alpha1.GitOpsClusterList{}
-	listopts := &client.ListOptions{}
+	listopts := &client.ListOptions{Namespace: obj.Meta.GetNamespace()}
 	err := mapper.List(context.TODO(), gitOpsClusterList, listopts)
 
 	if err != nil {
@@ -102,7 +102,7 @@ func (mapper *placementDecisionMapper) Map(obj handler.MapObject) []reconcile.Re
 	// if placementDecision is created/updated/deleted, its relative GitOpsCluster should be reconciled.
 	for _, gitOpsCluster := range gitOpsClusterList.Items {
 		if strings.EqualFold(gitOpsCluster.Spec.PlacementRef.Name, labels["cluster.open-cluster-management.io/placement"]) &&
-			strings.EqualFold(gitOpsCluster.Spec.PlacementRef.Namespace, obj.Meta.GetNamespace()) {
+			strings.EqualFold(gitOpsCluster.Namespace, obj.Meta.GetNamespace()) {
 			klog.Infof("Placement decision %s/%s affects GitOpsCluster %s/%s",
 				obj.Meta.GetNamespace(),
 				obj.Meta.GetName(),
@@ -297,7 +297,8 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 	}
 
 	// 2. Get the list of managed clusters
-	managedClusters, err := r.GetManagedClusters(*instance.Spec.PlacementRef)
+	// The placement must be in the same namespace as GitOpsCluster
+	managedClusters, err := r.GetManagedClusters(instance.Namespace, *instance.Spec.PlacementRef)
 	// 2a. Get the placement decision
 	// 2b. Get the managed cluster names from the placement decision
 	if err != nil {
@@ -497,14 +498,14 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string
 }
 
 // GetManagedClusters retrieves managed cluster names from placement decision
-func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectReference) ([]string, error) {
+func (r *ReconcileGitOpsCluster) GetManagedClusters(namespace string, placementref v1.ObjectReference) ([]string, error) {
 	if placementref.Kind != "Placement" ||
 		placementref.APIVersion != "cluster.open-cluster-management.io/v1alpha1" {
 		return nil, errInvalidPlacementRef
 	}
 
 	placement := &clusterv1alpha1.Placement{}
-	err := r.Get(context.TODO(), types.NamespacedName{Namespace: placementref.Namespace, Name: placementref.Name}, placement)
+	err := r.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: placementref.Name}, placement)
 
 	if err != nil {
 		klog.Error("failed to get placement. err: ", err.Error())
@@ -515,7 +516,7 @@ func (r *ReconcileGitOpsCluster) GetManagedClusters(placementref v1.ObjectRefere
 
 	placementDecisions := &clusterv1alpha1.PlacementDecisionList{}
 
-	listopts := &client.ListOptions{}
+	listopts := &client.ListOptions{Namespace: namespace}
 
 	secretSelector := &metav1.LabelSelector{
 		MatchLabels: map[string]string{
