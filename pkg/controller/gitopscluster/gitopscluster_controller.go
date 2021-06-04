@@ -297,6 +297,7 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 	}
 
 	// 2. Get the list of managed clusters
+	// The placement must be in the same namespace as GitOpsCluster
 	managedClusters, err := r.GetManagedClusters(instance.Namespace, *instance.Spec.PlacementRef)
 	// 2a. Get the placement decision
 	// 2b. Get the managed cluster names from the placement decision
