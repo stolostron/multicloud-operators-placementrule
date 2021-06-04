@@ -457,9 +457,9 @@ func getConfigMapDuck(configMapName string, namespace string, apiVersion string,
 			Namespace: namespace,
 		},
 		Data: map[string]string{
-			"apiVerison":    apiVersion,
+			"apiVersion":    apiVersion,
 			"kind":          kind,
-			"statusListkey": "decisions",
+			"statusListKey": "decisions",
 			"matchKey":      "clusterName",
 		},
 	}
