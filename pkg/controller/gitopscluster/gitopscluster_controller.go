@@ -308,11 +308,11 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 		instance.Status.Phase = "failed"
 		instance.Status.Message = err.Error()
 
-		err := r.Client.Status().Update(context.TODO(), instance)
+		err2 := r.Client.Status().Update(context.TODO(), instance)
 
-		if err != nil {
-			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
-			return 3, err
+		if err2 != nil {
+			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err2)
+			return 3, err2
 		}
 	}
 
@@ -328,11 +328,11 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 		instance.Status.Phase = "failed"
 		instance.Status.Message = err.Error()
 
-		err := r.Client.Status().Update(context.TODO(), instance)
+		err2 := r.Client.Status().Update(context.TODO(), instance)
 
-		if err != nil {
-			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err)
-			return 3, err
+		if err2 != nil {
+			klog.Errorf("failed to update GitOpsCluster %s status, will try again in 3 minutes: %s", instance.Namespace+"/"+instance.Name, err2)
+			return 3, err2
 		}
 
 		// it passed all vaidations but simply failed to create or update secrets. Reconile again in 1 minute.
