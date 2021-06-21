@@ -546,24 +546,29 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetRbac(namespace string) erro
 	err := r.Get(context.Background(), types.NamespacedName{Name: ROLENAME, Namespace: namespace}, &rbacv1.Role{})
 	if k8errors.IsNotFound(err) {
 		klog.Infof("creating role %s, in namespace %s", ROLENAME, namespace)
+
 		err = r.Create(context.Background(), getRoleDuck(namespace))
 		if err != nil {
 			return err
 		}
 	}
+
 	err = r.Get(context.Background(), types.NamespacedName{Name: ROLEBINDINGNAME, Namespace: namespace}, &rbacv1.ClusterRoleBinding{})
 	if k8errors.IsNotFound(err) {
 		klog.Infof("creating roleBinding %s, in namespace %s", ROLEBINDINGNAME, namespace)
+
 		err = r.Create(context.Background(), getRoleBindingDuck(namespace))
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
 // GetManagedClusters retrieves managed cluster names from placement decision
 func (r *ReconcileGitOpsCluster) GetManagedClusters(namespace string, placementref v1.ObjectReference) ([]string, error) {
+
 	if placementref.Kind != "Placement" ||
 		placementref.APIVersion != "cluster.open-cluster-management.io/v1alpha1" {
 		return nil, errInvalidPlacementRef

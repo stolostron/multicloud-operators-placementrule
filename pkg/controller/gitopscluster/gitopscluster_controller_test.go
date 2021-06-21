@@ -584,10 +584,12 @@ func expectedConfigMapCreated(c client.Client, expectedConfigMap types.Namespace
 
 func expectedRbacCreated(c client.Client, expectedDetails types.NamespacedName) bool {
 	timeout := 0
+
 	for {
 		role := &rbacv1.Role{}
 		err := c.Get(context.TODO(), expectedDetails, role)
 		fmt.Printf("role: %v", role)
+
 		if err == nil {
 			roleBinding := &rbacv1.RoleBinding{}
 			err = c.Get(context.TODO(), expectedDetails, roleBinding)
