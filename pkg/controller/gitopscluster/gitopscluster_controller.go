@@ -480,7 +480,7 @@ func getRoleDuck(namespace string) *rbacv1.Role {
 	return &rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{Name: ROLENAME, Namespace: namespace},
 		Rules: []rbacv1.PolicyRule{
-			rbacv1.PolicyRule{
+			{
 				APIGroups: []string{"apps.open-cluster-management.io", "cluster.open-cluster-management.io"},
 				Resources: []string{"placementrules", "placementdecisions"},
 				Verbs:     []string{"list"},
@@ -498,7 +498,7 @@ func getRoleBindingDuck(namespace string) *rbacv1.RoleBinding {
 			Name:     ROLENAME,
 		},
 		Subjects: []rbacv1.Subject{
-			rbacv1.Subject{
+			{
 				Kind:      "ServiceAccount",
 				Name:      "openshift-gitops-applicationset-controller",
 				Namespace: namespace,
