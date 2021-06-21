@@ -538,6 +538,8 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string
 	return nil
 }
 
+// CreateApplicationSetRbac sets up required role and roleBinding so that the applicationset-controller
+// can work with placementRules and placementDecisions
 func (r *ReconcileGitOpsCluster) CreateApplicationSetRbac(namespace string) error {
 	if namespace == "" {
 		return errors.New("no namespace provided")
@@ -568,7 +570,6 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetRbac(namespace string) erro
 
 // GetManagedClusters retrieves managed cluster names from placement decision
 func (r *ReconcileGitOpsCluster) GetManagedClusters(namespace string, placementref v1.ObjectReference) ([]string, error) {
-
 	if placementref.Kind != "Placement" ||
 		placementref.APIVersion != "cluster.open-cluster-management.io/v1alpha1" {
 		return nil, errInvalidPlacementRef
