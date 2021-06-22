@@ -16,6 +16,7 @@ package gitopscluster
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	gitopsclusterV1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -209,6 +211,11 @@ var (
 		Namespace: "argocd1",
 	}
 
+	applicationsetRole = types.NamespacedName{
+		Name:      ROLENAME,
+		Namespace: "argocd1",
+	}
+
 	gitOpsClusterSecret2 = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cluster1-cluster-secret",
@@ -367,8 +374,9 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	g.Expect(expectedSecretCreated(c, gitOpsClusterSecret1Key)).To(gomega.BeTrue())
 
 	// Test that the ConfigMaps for ApplicationSets were created
-	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapNew))
-	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapOld))
+	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapNew)).To(gomega.BeTrue())
+	g.Expect(expectedConfigMapCreated(c, applicationSetConfigMapOld)).To(gomega.BeTrue())
+	g.Expect(expectedRbacCreated(c, applicationsetRole)).To(gomega.BeTrue())
 }
 
 func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
@@ -562,6 +570,33 @@ func expectedConfigMapCreated(c client.Client, expectedConfigMap types.Namespace
 
 		if err == nil {
 			return true
+		}
+
+		if timeout > 30 {
+			return false
+		}
+
+		time.Sleep(time.Second * 3)
+
+		timeout += 3
+	}
+}
+
+func expectedRbacCreated(c client.Client, expectedDetails types.NamespacedName) bool {
+	timeout := 0
+
+	for {
+		role := &rbacv1.Role{}
+		err := c.Get(context.TODO(), expectedDetails, role)
+		fmt.Printf("role: %v", role)
+
+		if err == nil {
+			roleBinding := &rbacv1.RoleBinding{}
+			err = c.Get(context.TODO(), expectedDetails, roleBinding)
+
+			if err == nil {
+				return true
+			}
 		}
 
 		if timeout > 30 {

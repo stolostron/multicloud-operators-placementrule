@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 
+	rbacv1 "k8s.io/api/rbac/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -293,7 +294,13 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 	// 1a. Add configMaps to be used by ArgoCD ApplicationSets
 	err := r.CreateApplicationSetConfigMaps(gitOpsCluster.Spec.ArgoServer.ArgoNamespace)
 	if err != nil {
-		klog.Warningf("ConfigMaps were not created: %v", err.Error())
+		klog.Warningf("there was a problem creating the configMaps: %v", err.Error())
+	}
+
+	// 1b. Add roles so applicationset-controller can read placementRules and placementDecisions
+	err = r.CreateApplicationSetRbac(gitOpsCluster.Spec.ArgoServer.ArgoNamespace)
+	if err != nil {
+		klog.Warningf("there was a problem creating the role or binding: %v", err.Error())
 	}
 
 	// 2. Get the list of managed clusters
@@ -466,6 +473,40 @@ func getConfigMapDuck(configMapName string, namespace string, apiVersion string,
 	}
 }
 
+const ROLENAME = "openshift-gitops-applicationset-controller-placement"
+const ROLEBINDINGNAME = ROLENAME
+
+func getRoleDuck(namespace string) *rbacv1.Role {
+	return &rbacv1.Role{
+		ObjectMeta: metav1.ObjectMeta{Name: ROLENAME, Namespace: namespace},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{"apps.open-cluster-management.io", "cluster.open-cluster-management.io"},
+				Resources: []string{"placementrules", "placementdecisions"},
+				Verbs:     []string{"list"},
+			},
+		},
+	}
+}
+
+func getRoleBindingDuck(namespace string) *rbacv1.RoleBinding {
+	return &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: ROLEBINDINGNAME, Namespace: namespace},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "Role",
+			Name:     ROLENAME,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      "openshift-gitops-applicationset-controller",
+				Namespace: namespace,
+			},
+		},
+	}
+}
+
 // ApplyApplicationSetConfigMaps creates the required configMap to allow ArgoCD ApplicationSet
 // to identify our two forms of placement
 func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string) error {
@@ -490,6 +531,36 @@ func (r *ReconcileGitOpsCluster) CreateApplicationSetConfigMaps(namespace string
 				return err
 			}
 		} else if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// CreateApplicationSetRbac sets up required role and roleBinding so that the applicationset-controller
+// can work with placementRules and placementDecisions
+func (r *ReconcileGitOpsCluster) CreateApplicationSetRbac(namespace string) error {
+	if namespace == "" {
+		return errors.New("no namespace provided")
+	}
+
+	err := r.Get(context.Background(), types.NamespacedName{Name: ROLENAME, Namespace: namespace}, &rbacv1.Role{})
+	if k8errors.IsNotFound(err) {
+		klog.Infof("creating role %s, in namespace %s", ROLENAME, namespace)
+
+		err = r.Create(context.Background(), getRoleDuck(namespace))
+		if err != nil {
+			return err
+		}
+	}
+
+	err = r.Get(context.Background(), types.NamespacedName{Name: ROLEBINDINGNAME, Namespace: namespace}, &rbacv1.ClusterRoleBinding{})
+	if k8errors.IsNotFound(err) {
+		klog.Infof("creating roleBinding %s, in namespace %s", ROLEBINDINGNAME, namespace)
+
+		err = r.Create(context.Background(), getRoleBindingDuck(namespace))
+		if err != nil {
 			return err
 		}
 	}
