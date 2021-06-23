@@ -633,6 +633,9 @@ func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(
 	argoNamespace string,
 	managedClusters []string,
 	orphanSecretsList map[types.NamespacedName]string) error {
+	returnErr := errors.New("")
+	errorOccurred := false
+
 	for _, managedCluster := range managedClusters {
 		klog.Infof("adding managed cluster %s to gitops namespace %s", managedCluster, argoNamespace)
 
@@ -644,14 +647,22 @@ func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(
 
 		if err != nil {
 			klog.Error("failed to get managed cluster secret. err: ", err.Error())
-			return err
+
+			errorOccurred = true
+			returnErr = err
+
+			continue
 		}
 
 		err = r.CreateManagedClusterSecretInArgo(argoNamespace, *managedClusterSecret)
 
 		if err != nil {
 			klog.Error("failed to create managed cluster secret. err: ", err.Error())
-			return err
+
+			errorOccurred = true
+			returnErr = err
+
+			continue
 		}
 
 		// Since thie secret is now added to Argo, it is not orphan.
@@ -659,7 +670,11 @@ func (r *ReconcileGitOpsCluster) AddManagedClustersToArgo(
 		delete(orphanSecretsList, argoManagedClusterSecretKey)
 	}
 
-	return nil
+	if !errorOccurred {
+		return nil
+	}
+
+	return returnErr
 }
 
 // CreateManagedClusterSecretInArgo creates a managed cluster secret with specific metadata in Argo namespace
