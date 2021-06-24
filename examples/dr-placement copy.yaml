@@ -1,0 +1,23 @@
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: all-ready-clusters
+  namespace: default
+spec:
+  # Only one cluster will be chosen from all matching clusters.
+  # The choice will always be the first cluster in the list that is online.
+  #
+  # If the chosen cluster fails, the next online cluster in the list will be chosen
+  # If the chosen cluster is not the first in the list and it fails, if a cluster earlier
+  # in the list is back online it will be chosen
+  #
+  # The easiest way to use this is with just two clusters.
+  # Using the list allows you to dictate the order.
+  ClusterReplicas: 1
+  clusters:
+    - name: cluster1
+    - name: cluster2
+    - name: cluster3
+  clusterConditions:
+    - type: ManagedClusterConditionAvailable
+      status: "True"
