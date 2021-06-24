@@ -5,7 +5,5 @@ metadata:
   namespace: default
 spec:
   clusterSelector: {}
-  # Only selects clusters that are online
-  clusterConditions:
-    - type: ManagedClusterConditionAvailable
-      status: "True"
+  # Only one cluster will be chosen from all matching clusters
+  ClusterReplicas: 1
