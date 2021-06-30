@@ -70,7 +70,6 @@ var migrationDone = true
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	authCfg := mgr.GetConfig()
-	klog.Infof("Host: %v, BearerToken: %v", authCfg.Host, authCfg.BearerToken)
 	kubeClient := kubernetes.NewForConfigOrDie(authCfg)
 
 	dsRS := &ReconcileGitOpsCluster{
