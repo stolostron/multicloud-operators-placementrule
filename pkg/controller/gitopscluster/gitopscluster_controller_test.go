@@ -27,6 +27,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -256,39 +257,23 @@ var (
 		Namespace: gitopsServerNamespace1.Name,
 	}
 
-	argoServerPod = &corev1.Pod{
+	argoService = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "argo-server",
 			Namespace: "argocd1",
 			Labels: map[string]string{
-				"app.kubernetes.io/name": "argocd-server",
+				"app.kubernetes.io/part-of":   "argocd",
+				"app.kubernetes.io/component": "server",
 			},
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
+		Spec: corev1.ServiceSpec{
+			ClusterIP:       "10.0.0.10",
+			SessionAffinity: corev1.ServiceAffinityNone,
+			Type:            corev1.ServiceTypeClusterIP,
+			Ports: []corev1.ServicePort{
 				{
-					Name:    "test",
-					Image:   "busybox",
-					Command: []string{"sh", "-c", "echo \"Fake argo server\" && sleep 3600"},
-				},
-			},
-		},
-	}
-
-	openshiftGitopsServerPod = &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitops-server",
-			Namespace: "openshift-gitops1",
-			Labels: map[string]string{
-				"app.kubernetes.io/name": "openshift-gitops-server",
-			},
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    "test",
-					Image:   "busybox",
-					Command: []string{"sh", "-c", "echo \"Fake argo server\" && sleep 3600"},
+					Port:       int32(443),
+					TargetPort: intstr.FromInt(443),
 				},
 			},
 		},
@@ -354,9 +339,9 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	// Create Argo namespace and fake argo server pod
 	c.Create(context.TODO(), argocdServerNamespace1)
-	g.Expect(c.Create(context.TODO(), argoServerPod.DeepCopy())).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Create(context.TODO(), argoService.DeepCopy())).NotTo(gomega.HaveOccurred())
 
-	defer c.Delete(context.TODO(), argoServerPod)
+	defer c.Delete(context.TODO(), argoService)
 
 	// Create GitOpsCluster CR
 	goc := gitOpsCluster.DeepCopy()
@@ -519,9 +504,13 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 
 	// Create Openshift-gitops namespace
 	c.Create(context.TODO(), gitopsServerNamespace1)
-	g.Expect(c.Create(context.TODO(), openshiftGitopsServerPod)).NotTo(gomega.HaveOccurred())
 
-	defer c.Delete(context.TODO(), openshiftGitopsServerPod)
+	argoServiceInGitOps := argoService.DeepCopy()
+	argoServiceInGitOps.Namespace = gitopsServerNamespace1.Name
+
+	g.Expect(c.Create(context.TODO(), argoServiceInGitOps)).NotTo(gomega.HaveOccurred())
+
+	defer c.Delete(context.TODO(), argoServiceInGitOps)
 
 	// Create GitOpsCluster CR
 	goc := gitOpsCluster.DeepCopy()
@@ -667,9 +656,9 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 
 	// Create Argo namespace
 	c.Create(context.TODO(), argocdServerNamespace1)
-	g.Expect(c.Create(context.TODO(), argoServerPod.DeepCopy())).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Create(context.TODO(), argoService.DeepCopy())).NotTo(gomega.HaveOccurred())
 
-	defer c.Delete(context.TODO(), argoServerPod)
+	defer c.Delete(context.TODO(), argoService)
 
 	// Create invalid Argo namespaces where there is no argo server pod
 	// And create a cluster secret to simulate an orphan cluster secret

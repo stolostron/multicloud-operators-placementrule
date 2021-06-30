@@ -273,8 +273,12 @@ func (r *ReconcileGitOpsCluster) reconcileGitOpsCluster(
 	orphanSecretsList map[types.NamespacedName]string) (int, error) {
 	instance := gitOpsCluster.DeepCopy()
 
+	annotations := instance.GetAnnotations()
+
 	// 1. Verify that spec.argoServer.argoNamespace is a valid ArgoCD namespace
-	if !r.VerifyArgocdNamespace(gitOpsCluster.Spec.ArgoServer.ArgoNamespace) {
+	// skipArgoNamespaceVerify annotation just in case the service labels we use for verification change in future
+	if !r.VerifyArgocdNamespace(gitOpsCluster.Spec.ArgoServer.ArgoNamespace) &&
+		annotations["skipArgoNamespaceVerify"] != "true" {
 		klog.Info("invalid argocd namespace because argo server pod was not found")
 
 		instance.Status.LastUpdateTime = metav1.Now()
@@ -410,46 +414,41 @@ func (r *ReconcileGitOpsCluster) GetAllGitOpsClusters() (gitopsclusterV1alpha1.G
 // VerifyArgocdNamespace verifies that the given argoNamespace is a valid namspace by verifying that ArgoCD is actually
 // installed in that namespace
 func (r *ReconcileGitOpsCluster) VerifyArgocdNamespace(argoNamespace string) bool {
-	// Check if argo server pod exists in the namespace. This is the community ArgoCD installation.
-	isArgoCDNamespace := r.FindPodsWithLabelsAndNamespace(argoNamespace, map[string]string{"app.kubernetes.io/name": "argocd-server"})
-
-	// Check if opernshift gitops argo server pod exists in the namespace. This is the RH OpenShift GitOps operator installation.
-	isGitOpsNamespace := r.FindPodsWithLabelsAndNamespace(argoNamespace, map[string]string{"app.kubernetes.io/name": "openshift-gitops-server"})
-
-	return isArgoCDNamespace || isGitOpsNamespace
+	return r.FindServiceWithLabelsAndNamespace(argoNamespace,
+		map[string]string{"app.kubernetes.io/component": "server", "app.kubernetes.io/part-of": "argocd"})
 }
 
-// FindPodsWithLabelsAndNamespace finds a list of pods with provided labels from the specified namespace
-func (r *ReconcileGitOpsCluster) FindPodsWithLabelsAndNamespace(namespace string, labels map[string]string) bool {
-	podList := &v1.PodList{}
+// FindServiceWithLabelsAndNamespace finds a list of services with provided labels from the specified namespace
+func (r *ReconcileGitOpsCluster) FindServiceWithLabelsAndNamespace(namespace string, labels map[string]string) bool {
+	serviceList := &v1.ServiceList{}
 	listopts := &client.ListOptions{}
 
-	podSelector := &metav1.LabelSelector{
+	serviceSelector := &metav1.LabelSelector{
 		MatchLabels: labels,
 	}
 
-	podLabels, err := utils.ConvertLabels(podSelector)
+	serviceLabels, err := utils.ConvertLabels(serviceSelector)
 	if err != nil {
 		klog.Error("Failed to convert label selector, err:", err)
 		return false
 	}
 
-	listopts.LabelSelector = podLabels
+	listopts.LabelSelector = serviceLabels
 	listopts.Namespace = namespace
-	err = r.List(context.TODO(), podList, listopts)
+	err = r.List(context.TODO(), serviceList, listopts)
 
 	if err != nil {
-		klog.Error("Failed to list pods, err:", err)
+		klog.Error("Failed to list services, err:", err)
 		return false
 	}
 
-	if len(podList.Items) == 0 {
-		klog.Infof("No pod with labels %v found", labels)
+	if len(serviceList.Items) == 0 {
+		klog.Infof("No service with labels %v found", labels)
 		return false
 	}
 
-	for _, pod := range podList.Items {
-		klog.Info("Found pod ", pod.GetName(), " in namespace ", pod.GetNamespace())
+	for _, service := range serviceList.Items {
+		klog.Info("Found service ", service.GetName(), " in namespace ", service.GetNamespace())
 	}
 
 	return true
