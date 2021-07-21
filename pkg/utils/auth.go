@@ -30,8 +30,15 @@ import (
 )
 
 var (
-	AdminUsers  = map[string]bool{"admin": true, "multicluster-observability-operator": true}
-	AdminGroups = map[string]bool{"masters": true, "cluster-admins": true}
+	AdminUsers = map[string]bool{
+		"admin":                               true,
+		"multicluster-observability-operator": true,
+		"openshift-gitops-argocd-application-controller": true,
+	}
+	AdminGroups = map[string]bool{
+		"masters":        true,
+		"cluster-admins": true,
+	}
 )
 
 func FilteClustersByIdentity(authClient kubernetes.Interface, object runtime.Object, clmap map[string]*spokeClusterV1.ManagedCluster) error {
