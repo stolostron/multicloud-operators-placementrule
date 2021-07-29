@@ -24,7 +24,7 @@ import (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope="Cluster"
+// +kubebuilder:resource:scope="Namespaced"
 
 // GitOpsCluster is the Schema for the gitopsclusters API.
 type GitOpsCluster struct {
