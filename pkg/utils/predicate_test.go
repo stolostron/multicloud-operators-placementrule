@@ -110,9 +110,7 @@ func TestPredicate(t *testing.T) {
 
 	updateEvt := event.UpdateEvent{
 		ObjectOld: oldCluster,
-		MetaOld:   oldCluster.GetObjectMeta(),
 		ObjectNew: newCluster,
-		MetaNew:   newCluster.GetObjectMeta(),
 	}
 	ret := instance.Update(updateEvt)
 	g.Expect(ret).To(gomega.Equal(true))
@@ -122,16 +120,13 @@ func TestPredicate(t *testing.T) {
 
 	createEvt := event.CreateEvent{
 		Object: newSecret,
-		Meta:   newSecret.GetObjectMeta(),
 	}
 	ret = instance.Create(createEvt)
 	g.Expect(ret).To(gomega.Equal(true))
 
 	updateEvt = event.UpdateEvent{
 		ObjectOld: oldSecret,
-		MetaOld:   oldSecret.GetObjectMeta(),
 		ObjectNew: newSecret,
-		MetaNew:   newSecret.GetObjectMeta(),
 	}
 
 	ret = instance.Update(updateEvt)
@@ -139,7 +134,6 @@ func TestPredicate(t *testing.T) {
 
 	delEvt := event.DeleteEvent{
 		Object: newSecret,
-		Meta:   newSecret.GetObjectMeta(),
 	}
 	ret = instance.Delete(delEvt)
 	g.Expect(ret).To(gomega.Equal(true))
@@ -149,16 +143,13 @@ func TestPredicate(t *testing.T) {
 
 	createEvt = event.CreateEvent{
 		Object: newSecret,
-		Meta:   newSecret.GetObjectMeta(),
 	}
 	ret = instance.Create(createEvt)
 	g.Expect(ret).To(gomega.Equal(true))
 
 	updateEvt = event.UpdateEvent{
 		ObjectOld: oldSecret,
-		MetaOld:   oldSecret.GetObjectMeta(),
 		ObjectNew: newSecret,
-		MetaNew:   newSecret.GetObjectMeta(),
 	}
 
 	ret = instance.Update(updateEvt)
@@ -166,7 +157,6 @@ func TestPredicate(t *testing.T) {
 
 	delEvt = event.DeleteEvent{
 		Object: newSecret,
-		Meta:   newSecret.GetObjectMeta(),
 	}
 	ret = instance.Delete(delEvt)
 	g.Expect(ret).To(gomega.Equal(true))
@@ -176,16 +166,13 @@ func TestPredicate(t *testing.T) {
 
 	createEvt = event.CreateEvent{
 		Object: newArgocdService,
-		Meta:   newArgocdService.GetObjectMeta(),
 	}
 	ret = instance.Create(createEvt)
 	g.Expect(ret).To(gomega.Equal(true))
 
 	updateEvt = event.UpdateEvent{
 		ObjectOld: oldArgocdService,
-		MetaOld:   oldArgocdService.GetObjectMeta(),
 		ObjectNew: newArgocdService,
-		MetaNew:   newArgocdService.GetObjectMeta(),
 	}
 
 	ret = instance.Update(updateEvt)
@@ -193,7 +180,6 @@ func TestPredicate(t *testing.T) {
 
 	delEvt = event.DeleteEvent{
 		Object: newArgocdService,
-		Meta:   newArgocdService.GetObjectMeta(),
 	}
 	ret = instance.Delete(delEvt)
 	g.Expect(ret).To(gomega.Equal(true))
