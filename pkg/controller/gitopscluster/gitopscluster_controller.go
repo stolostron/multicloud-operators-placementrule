@@ -155,6 +155,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			&source.Kind{Type: &clusterv1alpha1.PlacementDecision{}},
 			handler.EnqueueRequestsFromMapFunc(pdMapper.Map),
 			utils.PlacementDecisionPredicateFunc)
+
 		if err != nil {
 			return err
 		}

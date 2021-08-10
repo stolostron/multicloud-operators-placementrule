@@ -80,6 +80,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			handler.EnqueueRequestsFromMapFunc(cpMapper.Map),
 			utils.ClusterPredicateFunc,
 		)
+
 		if err != nil {
 			return err
 		}

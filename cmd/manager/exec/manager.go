@@ -84,7 +84,7 @@ func RunManager() {
 	sig := signals.SetupSignalHandler()
 
 	klog.Info("Detecting ACM cluster API service...")
-	utils.DetectClusterRegistry(mgr.GetAPIReader(), sig)
+	utils.DetectClusterRegistry(sig, mgr.GetAPIReader())
 
 	klog.Info("Starting the Cmd.")
 
