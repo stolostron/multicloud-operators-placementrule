@@ -171,5 +171,5 @@ func TestPlacementRule(t *testing.T) {
 	// test FilteClustersByIdentity
 	err = FilteClustersByIdentity(kubeClient, placementrule1, clmap)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(clmap)).To(gomega.Equal(1))
+	g.Expect(len(clmap)).To(gomega.Equal(0))
 }

@@ -69,7 +69,7 @@ func StartTestManager(ctx context.Context, mgr manager.Manager, g *gomega.Gomega
 
 	go func() {
 		defer wg.Done()
-		g.Expect(mgr.Start(ctx)).NotTo(gomega.HaveOccurred())
+		mgr.Start(ctx)
 	}()
 
 	return wg

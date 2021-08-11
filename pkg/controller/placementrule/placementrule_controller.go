@@ -173,7 +173,7 @@ func (mapper *PolicyPlacementRuleMapper) Map(obj client.Object) []reconcile.Requ
 func (r *ReconcilePlacementRule) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the PlacementRule instance
 	instance := &appv1alpha1.PlacementRule{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.Get(ctx, request.NamespacedName, instance)
 
 	klog.Info("Reconciling:", request.NamespacedName, " with Get err:", err)
 

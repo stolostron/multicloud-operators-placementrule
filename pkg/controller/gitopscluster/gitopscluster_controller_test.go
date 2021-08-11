@@ -310,7 +310,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	g.Expect(c.Create(context.TODO(), test1PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), test1PlDc)
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 5)
 
 	// Update placement decision status
 	placementDecision1 := &clusterv1alpha1.PlacementDecision{}
@@ -323,7 +323,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision1)).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 5)
 
 	placementDecisionAfterupdate := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
