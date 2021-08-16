@@ -291,10 +291,11 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	recFn := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancel()
 		mgrStopped.Wait()
 	}()
 
@@ -309,7 +310,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 	g.Expect(c.Create(context.TODO(), test1PlDc.DeepCopy())).NotTo(gomega.HaveOccurred())
 	defer c.Delete(context.TODO(), test1PlDc)
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 5)
 
 	// Update placement decision status
 	placementDecision1 := &clusterv1alpha1.PlacementDecision{}
@@ -322,7 +323,7 @@ func TestReconcileCreateSecretInArgo(t *testing.T) {
 
 	g.Expect(c.Status().Update(context.TODO(), newPlacementDecision1)).NotTo(gomega.HaveOccurred())
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 5)
 
 	placementDecisionAfterupdate := &clusterv1alpha1.PlacementDecision{}
 	g.Expect(c.Get(context.TODO(),
@@ -375,10 +376,11 @@ func TestReconcileNoSecretInInvalidArgoNamespace(t *testing.T) {
 	recFn := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancel()
 		mgrStopped.Wait()
 	}()
 
@@ -454,10 +456,11 @@ func TestReconcileCreateSecretInOpenshiftGitops(t *testing.T) {
 	recFn := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancel()
 		mgrStopped.Wait()
 	}()
 
@@ -608,10 +611,11 @@ func TestReconcileDeleteOrphanSecret(t *testing.T) {
 	recFn := SetupTestReconcile(newReconciler(mgr))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancel()
 		mgrStopped.Wait()
 	}()
 

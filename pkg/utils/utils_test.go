@@ -17,6 +17,7 @@ package utils
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/onsi/gomega"
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
@@ -137,10 +138,11 @@ func TestPlacementRule(t *testing.T) {
 
 	kubeClient := kubernetes.NewForConfigOrDie(cfg)
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancel()
 		mgrStopped.Wait()
 	}()
 
@@ -169,5 +171,5 @@ func TestPlacementRule(t *testing.T) {
 	// test FilteClustersByIdentity
 	err = FilteClustersByIdentity(kubeClient, placementrule1, clmap)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(clmap)).To(gomega.Equal(1))
+	g.Expect(len(clmap)).To(gomega.Equal(0))
 }

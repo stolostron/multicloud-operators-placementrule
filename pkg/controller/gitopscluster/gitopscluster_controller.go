@@ -86,26 +86,26 @@ type placementDecisionMapper struct {
 	client.Client
 }
 
-func (mapper *placementDecisionMapper) Map(obj handler.MapObject) []reconcile.Request {
+func (mapper *placementDecisionMapper) Map(obj client.Object) []reconcile.Request {
 	var requests []reconcile.Request
 
 	gitOpsClusterList := &gitopsclusterV1alpha1.GitOpsClusterList{}
-	listopts := &client.ListOptions{Namespace: obj.Meta.GetNamespace()}
+	listopts := &client.ListOptions{Namespace: obj.GetNamespace()}
 	err := mapper.List(context.TODO(), gitOpsClusterList, listopts)
 
 	if err != nil {
 		klog.Error("failed to list GitOpsClusters, error:", err)
 	}
 
-	labels := obj.Meta.GetLabels()
+	labels := obj.GetLabels()
 
 	// if placementDecision is created/updated/deleted, its relative GitOpsCluster should be reconciled.
 	for _, gitOpsCluster := range gitOpsClusterList.Items {
 		if strings.EqualFold(gitOpsCluster.Spec.PlacementRef.Name, labels["cluster.open-cluster-management.io/placement"]) &&
-			strings.EqualFold(gitOpsCluster.Namespace, obj.Meta.GetNamespace()) {
+			strings.EqualFold(gitOpsCluster.Namespace, obj.GetNamespace()) {
 			klog.Infof("Placement decision %s/%s affects GitOpsCluster %s/%s",
-				obj.Meta.GetNamespace(),
-				obj.Meta.GetName(),
+				obj.GetNamespace(),
+				obj.GetName(),
 				gitOpsCluster.Namespace,
 				gitOpsCluster.Name)
 
@@ -150,10 +150,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 
 		// Watch cluster list changes in placement decision
+		pdMapper := &placementDecisionMapper{mgr.GetClient()}
 		err = c.Watch(
 			&source.Kind{Type: &clusterv1alpha1.PlacementDecision{}},
-			&handler.EnqueueRequestsFromMapFunc{ToRequests: &placementDecisionMapper{mgr.GetClient()}},
+			handler.EnqueueRequestsFromMapFunc(pdMapper.Map),
 			utils.PlacementDecisionPredicateFunc)
+
 		if err != nil {
 			return err
 		}
@@ -162,7 +164,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-func (r *ReconcileGitOpsCluster) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileGitOpsCluster) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	klog.Info("Reconciling GitOpsClusters for watched resource change: ", request.NamespacedName)
 
 	// Get all existing GitOps managed cluster secrets, not the ones from the managed cluster namespaces
