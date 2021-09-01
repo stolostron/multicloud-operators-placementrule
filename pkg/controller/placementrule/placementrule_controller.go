@@ -191,10 +191,6 @@ func (r *ReconcilePlacementRule) Reconcile(ctx context.Context, request reconcil
 	for _, cl := range instance.Status.Decisions {
 		orgclmap[cl.ClusterName] = cl.ClusterNamespace
 	}
-	// do nothing if has finalizer
-	if len(instance.GetObjectMeta().GetFinalizers()) != 0 {
-		return reconcile.Result{}, nil
-	}
 
 	// do nothing if not using mcm as scheduler (user set it to something else)
 	scname := instance.Spec.SchedulerName
