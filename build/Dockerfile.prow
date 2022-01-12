@@ -1,6 +1,6 @@
-FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.17-linux AS builder
 
-WORKDIR /go/src/github.com/open-cluster-management/multicluster-operators-placementrule
+WORKDIR /go/src/github.com/stolostron/multicluster-operators-placementrule
 COPY . .
 RUN make -f Makefile.prow build
 
@@ -14,8 +14,8 @@ ENV OPERATOR=/usr/local/bin/multicluster-operators-placementrule \
     USER_NAME=multicluster-operators-placementrule
 
 # install operator binary
-COPY --from=builder /go/src/github.com/open-cluster-management/multicluster-operators-placementrule/build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
-COPY --from=builder /go/src/github.com/open-cluster-management/multicluster-operators-placementrule/build/_output/bin/gitopscluster /usr/local/bin/gitopscluster
+COPY --from=builder /go/src/github.com/stolostron/multicluster-operators-placementrule/build/_output/bin/multicluster-operators-placementrule ${OPERATOR}
+COPY --from=builder /go/src/github.com/stolostron/multicluster-operators-placementrule/build/_output/bin/gitopscluster /usr/local/bin/gitopscluster
 
 COPY build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
