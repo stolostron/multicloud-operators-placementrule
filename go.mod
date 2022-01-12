@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/multicloud-operators-placementrule
+module github.com/stolostron/multicloud-operators-placementrule
 
 go 1.17
 
@@ -73,4 +73,8 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.21.3
+replace (
+	github.com/open-cluster-management/api => open-cluster-management.io/api v0.0.0-20210513122330-d76f10481f05
+	github.com/open-cluster-management/klusterlet-addon-controller => github.com/stolostron/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19
+	k8s.io/client-go => k8s.io/client-go v0.21.3
+)

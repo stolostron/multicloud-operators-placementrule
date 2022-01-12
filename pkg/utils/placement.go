@@ -29,7 +29,7 @@ import (
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
+	appv1alpha1 "github.com/stolostron/multicloud-operators-placementrule/pkg/apis/apps/v1"
 )
 
 func ToPlaceLocal(placement *appv1alpha1.Placement) bool {

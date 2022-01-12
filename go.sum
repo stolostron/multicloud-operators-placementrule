@@ -415,11 +415,6 @@ github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1y
 github.com/onsi/gomega v1.10.2/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=
 github.com/onsi/gomega v1.13.0 h1:7lLHu94wT9Ij0o6EWWclhu0aOh32VxhkwEJvzuWPeak=
 github.com/onsi/gomega v1.13.0/go.mod h1:lRk9szgn8TxENtWd0Tp4c3wjlRfMTMH27I+3Je41yGY=
-github.com/open-cluster-management/api v0.0.0-20200903203421-64b667f5455c/go.mod h1:F1hDJHtWuV7BAUtfL4XRS9GZjUpksleLgEcisNXvQEw=
-github.com/open-cluster-management/api v0.0.0-20210513122330-d76f10481f05 h1:djYyfpgsbRg/GUizlPHaemlmkS77N+ZCB9HmJGLpFVw=
-github.com/open-cluster-management/api v0.0.0-20210513122330-d76f10481f05/go.mod h1:ot+A1DWq+v1IV+e1S7nhIteYAmNByFgtazvzpoeAfRQ=
-github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19 h1:qWTC5iBoxrId/AKYdTcU9wGIx1CRwXqdnD4VppDBVpQ=
-github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19/go.mod h1:YWcjLe+zqmdqPFvwzASizCa8JdXe5briBgxoP+r3CRM=
 github.com/open-cluster-management/library-e2e-go v0.0.0-20200620112055-c80fc3c14997/go.mod h1:glvUOJg5EAb1Lq0OPcYhl57PJTxN2T5xuSfdV3Iab4Y=
 github.com/open-cluster-management/library-go v0.0.0-20200828173847-299c21e6c3fc/go.mod h1:X9KdKajEnrx6+LQSjo+61gLdk4Ntmwp+YEYD0CIJT7I=
 github.com/opencontainers/go-digest v1.0.0-rc1/go.mod h1:cMLVZDEM3+U2I4VmLI6N8jQYUd2OVphdqWwCJHrFt2s=
@@ -498,6 +493,8 @@ github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DM
 github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/yZzE=
 github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
+github.com/stolostron/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19 h1:hftm4DM0u/igwO7DEydPFoXaSY6Dly3e51EFAKgb3tE=
+github.com/stolostron/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19/go.mod h1:YWcjLe+zqmdqPFvwzASizCa8JdXe5briBgxoP+r3CRM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoHMkEqE=
@@ -945,7 +942,6 @@ k8s.io/klog v1.0.0 h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=
 k8s.io/klog v1.0.0/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
 k8s.io/klog/v2 v2.0.0/go.mod h1:PBfzABfn139FHAV07az/IF9Wp1bkk3vpT2XSJ76fSDE=
 k8s.io/klog/v2 v2.2.0/go.mod h1:Od+F08eJP+W3HUb4pSrPpgp9DGU4GzlpG/TmITuYh/Y=
-k8s.io/klog/v2 v2.3.0/go.mod h1:Od+F08eJP+W3HUb4pSrPpgp9DGU4GzlpG/TmITuYh/Y=
 k8s.io/klog/v2 v2.4.0/go.mod h1:Od+F08eJP+W3HUb4pSrPpgp9DGU4GzlpG/TmITuYh/Y=
 k8s.io/klog/v2 v2.8.0 h1:Q3gmuM9hKEjefWFFYF0Mat+YyFJvsUyYuwyNNJ5C9Ts=
 k8s.io/klog/v2 v2.8.0/go.mod h1:hy9LJ/NvuK+iVyP4Ehqva4HxZG/oXyIS3n3Jmire4Ec=
@@ -962,6 +958,8 @@ k8s.io/utils v0.0.0-20200729134348-d5654de09c73/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 k8s.io/utils v0.0.0-20201110183641-67b214c5f920/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210527160623-6fdb442a123b h1:MSqsVQ3pZvPGTqCjptfimO2WjG7A9un2zcpiHkA6M/s=
 k8s.io/utils v0.0.0-20210527160623-6fdb442a123b/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
+open-cluster-management.io/api v0.0.0-20210513122330-d76f10481f05 h1:aO4XnDCD3/N/JLaiCMfdEMQR8Zlmvtw4d5fx7YHZUGM=
+open-cluster-management.io/api v0.0.0-20210513122330-d76f10481f05/go.mod h1:ot+A1DWq+v1IV+e1S7nhIteYAmNByFgtazvzpoeAfRQ=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
