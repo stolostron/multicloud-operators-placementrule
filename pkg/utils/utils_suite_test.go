@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/apis"
 )
 
 var cfg *rest.Config

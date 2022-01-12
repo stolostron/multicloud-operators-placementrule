@@ -18,8 +18,8 @@ import (
 	"context"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
-	appv1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	appv1alpha1 "github.com/stolostron/multicloud-operators-placementrule/pkg/apis/apps/v1"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/utils"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
