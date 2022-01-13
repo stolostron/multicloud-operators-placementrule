@@ -14,7 +14,7 @@
 
 package apis
 
-import v1alpha1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
+import v1alpha1 "github.com/stolostron/multicloud-operators-placementrule/pkg/apis/apps/v1alpha1"
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
