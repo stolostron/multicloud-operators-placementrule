@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
-	appv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
+	appv1 "github.com/stolostron/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	rbacv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

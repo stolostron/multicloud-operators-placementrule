@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"os"
 
-	endpointapis "github.com/open-cluster-management/endpoint-operator/pkg/apis"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/controller"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	endpointapis "github.com/stolostron/endpoint-operator/pkg/apis"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/apis"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/controller"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/client-go/rest"

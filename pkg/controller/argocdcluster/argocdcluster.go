@@ -17,8 +17,8 @@ package argocdcluster
 import (
 	"context"
 
-	agentv1 "github.com/open-cluster-management/endpoint-operator/pkg/apis/agent/v1"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	agentv1 "github.com/stolostron/endpoint-operator/pkg/apis/agent/v1"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
