@@ -23,7 +23,7 @@ import (
 
 	"github.com/onsi/gomega"
 	spokeClusterV1 "github.com/open-cluster-management/api/cluster/v1"
-	endpointapis "github.com/open-cluster-management/endpoint-operator/pkg/apis"
+	endpointapis "github.com/stolostron/endpoint-operator/pkg/apis"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"

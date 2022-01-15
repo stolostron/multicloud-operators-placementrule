@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
-	agentv1 "github.com/open-cluster-management/endpoint-operator/pkg/apis/agent/v1"
-	"github.com/open-cluster-management/multicloud-operators-placementrule/pkg/utils"
+	agentv1 "github.com/stolostron/endpoint-operator/pkg/apis/agent/v1"
+	"github.com/stolostron/multicloud-operators-placementrule/pkg/utils"
 
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
