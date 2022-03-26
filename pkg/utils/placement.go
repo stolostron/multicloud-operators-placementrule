@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -44,7 +43,7 @@ func ToPlaceLocal(placement *appv1alpha1.Placement) bool {
 // Top priority: clusterNames, ignore selector
 // Bottomline: Use label selector
 func PlaceByGenericPlacmentFields(kubeclient client.Client, placement appv1alpha1.GenericPlacementFields,
-	authclient kubernetes.Interface, object runtime.Object) (map[string]*spokeClusterV1.ManagedCluster, error) {
+	object runtime.Object) (map[string]*spokeClusterV1.ManagedCluster, error) {
 	clmap := make(map[string]*spokeClusterV1.ManagedCluster)
 
 	var labelSelector *metav1.LabelSelector
