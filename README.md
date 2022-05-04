@@ -22,7 +22,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Placement Rules for Multicloud Applications.
+Placement Rules for Multicloud Applications. 
 
 ## What is the multicloud-operators-placementrule
 
