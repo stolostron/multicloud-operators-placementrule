@@ -26,7 +26,7 @@ Placement Rules for Multicloud Applications.
 
 ## What is the multicloud-operators-placementrule
 
-PlacementRule operator evaluate the target managed clusters that the subscription should deploy to.
+PlacementRule operator evaluate the target managed clusters that the subscription should deploy to. 
 
 ## Community, discussion, contribution, and support
 
