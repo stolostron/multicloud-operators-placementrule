@@ -30,7 +30,7 @@ PlacementRule operator evaluate the target managed clusters that the subscriptio
 
 ## Community, discussion, contribution, and support
 
-Check the [CONTRIBUTING Doc](CONTRIBUTING.md) for how to contribute to the repo.
+Check the [CONTRIBUTING Doc](CONTRIBUTING.md) for how to contribute to the repo. 
 
 ------
 
