@@ -59,7 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Enable the concurrent reconcile in case some placementrule could take longer to generate cluster decisions
 	c, err := controller.New("placementrule-controller", mgr, controller.Options{
 		Reconciler:              r,
-		MaxConcurrentReconciles: 10,
+		MaxConcurrentReconciles: 2,
 	})
 	if err != nil {
 		return err

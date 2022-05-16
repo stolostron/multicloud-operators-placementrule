@@ -48,8 +48,7 @@ build:
 
 .PHONY: lint
 
-lint:
-	@build/run-code-lint.sh
+lint: lint-go
 
 .PHONY: lint-all
 
