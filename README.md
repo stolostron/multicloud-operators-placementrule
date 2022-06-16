@@ -48,7 +48,7 @@ Check the [Deployment Doc](docs/deployment.md) for how to deploy the operator.
 
 Check the [Security Doc](SECURITY.md) if you've found a security issue.
 
-## References
+## References 
 
 ### multicloud-operators repositories
 
